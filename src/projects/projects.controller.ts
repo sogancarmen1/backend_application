@@ -1,136 +1,62 @@
 import express, { Router } from "express";
 import Controller from "interfaces/controller.interface";
 import Project from "./projects.interface";
-import TasksController from "../tasks/tasks.controller";
-import Task from "../tasks/tasks.interface";
+import ProjectNotFoundException from "../exceptions/ProjectNotFoundException";
+import validationMiddleware from "../middlewares/validation.middleware";
+import {CreateProjectDto, UpdateProjectDto} from "./projects.dto";
 
 class ProjectsController implements Controller {
   public path = "/projects";
   public router = express.Router();
-  public task: TasksController;
 
   private projects: Project[] = [
     {
       id: 1,
       projectName: "Nom du projet",
+      idUser: 4,
+    },
+    {
+      id: 2,
+      projectName: "Nom du projet",
+      idUser: 8,
     },
   ];
 
-  constructor(controllers: TasksController) {
-    this.task = controllers;
+  constructor() {
     this.initializeRoutes();
   }
 
   public initializeRoutes() {
     this.router.get(this.path, this.getAllProjects);
-    this.router.post(this.path, this.createProject);
-    this.router.put(`${this.path}/:id`, this.modifyProject);
+    this.router.post(
+      this.path,
+      validationMiddleware(CreateProjectDto),
+      this.createProject
+    );
+    //Faire des réglages ici
+    this.router.put(
+      `${this.path}/:id`,
+      validationMiddleware(UpdateProjectDto, true),
+      this.modifyProject
+    );
     this.router.delete(`${this.path}/:id`, this.deleteProject);
     this.router.get(`${this.path}/:id`, this.getProjectById);
-    this.router.get(
-      `${this.path}/:id${this.task.path}`,
-      this.getAllTaskInProject
-    );
-    this.router.delete(
-      `${this.path}/:id${this.task.path}/:id1`,
-      this.deleteTaskInProject
-    );
-    this.router.put(
-      `${this.path}/:id${this.task.path}/:id1`,
-      this.updateTaskProject
-    );
-    this.router.post(
-      `${this.path}/:id${this.task.path}`,
-      this.createTaskInProject
-    );
   }
-
-  private createTaskInProject = (
-    request: express.Request,
-    response: express.Response
-  ) => {
-    const id = request.params.id;
-    const newTask: Task = request.body;
-    const index = this.projects.findIndex(
-      (project) => project.id === Number(id)
-    );
-    if (index != -1) {
-      this.task.tasks.push(newTask);
-      response.send(newTask);
-    }
-  };
-
-  private updateTaskProject = (
-    request: express.Request,
-    response: express.Response
-  ) => {
-    const id = request.params.id;
-    const id1 = request.params.id1;
-    const newTask: Task = request.body;
-    const index = this.projects.findIndex(
-      (project) => project.id === Number(id)
-    );
-    const index1 = this.task.tasks.findIndex((task) => task.id === Number(id1));
-    if (index != -1) {
-      if (index1 != -1) {
-        if (this.projects[index].id === this.task.tasks[index1].idProject) {
-          this.task.tasks[index1].taskName = newTask.taskName;
-          this.task.tasks[index1].dueDate = newTask.dueDate;
-          this.task.tasks[index1].priority = newTask.priority;
-          this.task.tasks[index1].status = newTask.status;
-          this.task.tasks[index1].idProject = this.projects[index].id;
-          response.send(newTask);
-        }
-      }
-    }
-  };
-
-  private deleteTaskInProject = (
-    request: express.Request,
-    response: express.Response
-  ) => {
-    const id = request.params.id;
-    const id1 = request.params.id1;
-    const index = this.projects.findIndex(
-      (project) => project.id === Number(id)
-    );
-    const index1 = this.task.tasks.findIndex((task) => task.id === Number(id1));
-    if (index != -1) {
-      if (index1 != -1) {
-        if (this.projects[index].id === this.task.tasks[index1].idProject) {
-          response.send(
-            `La tâche ${this.task.tasks[index1].taskName} se trouvant dans le projet ${this.projects[index].projectName} à été supprimée!`
-          );
-          this.task.tasks.splice(index1, 1);
-        }
-      }
-    }
-  };
-
-  private getAllTaskInProject = (
-    request: express.Request,
-    response: express.Response
-  ) => {
-    const id = request.params.id;
-    const tasks: Task[] = [];
-    const index = this.projects.findIndex(
-      (project) => project.id === Number(id)
-    );
-    if (index != -1) {
-      this.task.tasks.forEach((task) => {
-        if (task.idProject === Number(id)) {
-          tasks.push(task);
-        }
-      });
-    }
-    response.send(tasks);
-  };
 
   private getAllProjects = (
     request: express.Request,
-    response: express.Response
+    response: express.Response,
+    next: express.NextFunction
   ) => {
-    response.send(this.projects);
+    const id = request.query.id;
+    const allProjects: Project[] = [];
+    this.projects.forEach((project) => {
+      if (project.idUser === Number(id)) {
+        allProjects.push(project);
+      }
+    });
+    if (allProjects.length > 0) response.send(allProjects);
+    else next(new ProjectNotFoundException(String(id)));
   };
 
   private createProject = (
@@ -144,23 +70,26 @@ class ProjectsController implements Controller {
 
   private modifyProject = (
     request: express.Request,
-    response: express.Response
+    response: express.Response,
+    next: express.NextFunction
   ) => {
     const id = request.params.id;
-    const newProject: Project = request.body;
+    const newProject: UpdateProjectDto = request.body;
     const index = this.projects.findIndex(
       (project) => project.id === Number(id)
     );
     if (index != -1) {
-      this.projects[index].id = newProject.id;
       this.projects[index].projectName = newProject.projectName;
+      response.send(newProject);
+    } else {
+      next(new ProjectNotFoundException(id));
     }
-    response.send(newProject);
   };
 
   private deleteProject = (
     request: express.Request,
-    response: express.Response
+    response: express.Response,
+    next: express.NextFunction
   ) => {
     const id = request.params.id;
     const index = this.projects.findIndex(
@@ -171,6 +100,8 @@ class ProjectsController implements Controller {
         `La tâche "${this.projects[index].projectName}" à été supprimée avec succès!`
       );
       this.projects.splice(index, 1);
+    } else {
+      next(new ProjectNotFoundException(id));
     }
   };
 

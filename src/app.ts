@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import { Pool } from "pg";
 import Controller from "interfaces/controller.interface";
 import errorMiddleware from "./middlewares/erreur.middleware";
+import cookieParser from 'cookie-parser';
 
 class App {
   public app: express.Application;
@@ -20,6 +21,7 @@ class App {
 
   private initializeMiddlewares() {
     this.app.use(bodyParser.json());
+    this.app.use(cookieParser());
   }
 
   private initializeErrorHandling() {
@@ -39,8 +41,15 @@ class App {
   }
 
   private async connectToTheDatabase() {
-    const { DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_DATABASE, PORT } =
-      process.env;
+    const {
+      DB_USER,
+      DB_PASSWORD,
+      DB_HOST,
+      DB_PORT,
+      DB_DATABASE,
+      PORT,
+      JWT_SECRET,
+    } = process.env;
 
     const pool = new Pool({
       host: DB_HOST,

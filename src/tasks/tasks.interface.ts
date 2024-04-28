@@ -1,7 +1,7 @@
 interface Task {
   id: Number;
   taskName: string;
-  dueDate: Date;
+  dueDate: string;
   priority: string;
   status: string;
   idProject: Number;
