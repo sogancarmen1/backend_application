@@ -4,7 +4,7 @@ import Task from "./tasks.interface";
 import TaskNotFoundException from "../exceptions/TaskNotFoundException";
 import ProjectNotFoundException from "../exceptions/ProjectNotFoundException";
 import validationMiddleware from "../middlewares/validation.middleware";
-import CreateTaskDto from "./tasks.dto";
+import { CreateTaskDto, updateTaskDto } from "./tasks.dto";
 
 class TasksController implements Controller {
   public path = "/tasks";
@@ -17,7 +17,7 @@ class TasksController implements Controller {
       dueDate: "12/02/2021",
       priority: "High",
       status: "in_progess",
-      idProject: 1,
+      projectId: 1,
     },
     {
       id: 2,
@@ -25,7 +25,7 @@ class TasksController implements Controller {
       dueDate: "14/08/2000",
       priority: "Low",
       status: "todo",
-      idProject: 1,
+      projectId: 1,
     },
     {
       id: 3,
@@ -33,7 +33,7 @@ class TasksController implements Controller {
       dueDate: "20/12/2023",
       priority: "Average",
       status: "done",
-      idProject: 2,
+      projectId: 2,
     },
   ];
 
@@ -54,14 +54,27 @@ class TasksController implements Controller {
     );
     this.router.delete(`${this.path}/:id`, this.deleteTaskInProject);
     this.router.get(this.path, this.getTaskByProject);
+    this.router.get(`${this.path}/:id`, this.getTaskById);
   }
+
+  private getTaskById = (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    const id = request.params.id;
+    const index = this.tasks.findIndex((task) => task.id === Number(id));
+    if (index != -1) {
+      response.send(this.tasks[index]);
+    } else next(new TaskNotFoundException(id));
+  };
 
   private createTaskInProject = (
     request: express.Request,
     response: express.Response
   ) => {
-    const task: Task = request.body;
-    this.tasks.push(task);
+    const task: CreateTaskDto = request.body;
+    this.tasks.push({ id: 12, ...task });
     response.send(task);
   };
 
@@ -71,17 +84,14 @@ class TasksController implements Controller {
     next: express.NextFunction
   ) => {
     const id = request.params.id;
-    const id1 = request.query.id1;
-    const newTask: Task = request.body;
+    const newTask: updateTaskDto = request.body;
     const index = this.tasks.findIndex((task) => task.id === Number(id));
     if (index != -1) {
-      if (this.tasks[index].idProject === Number(id1)) {
-        this.tasks[index].taskName = newTask.taskName;
-        this.tasks[index].dueDate = newTask.dueDate;
-        this.tasks[index].priority = newTask.priority;
-        this.tasks[index].idProject = newTask.idProject;
-        response.send(newTask);
-      } else next(new ProjectNotFoundException(String(id1)));
+      this.tasks[index].taskName = newTask.taskName;
+      this.tasks[index].dueDate = newTask.dueDate;
+      this.tasks[index].priority = newTask.priority;
+      this.tasks[index].status = newTask.status;
+      response.send(newTask);
     } else next(new TaskNotFoundException(id));
   };
 
@@ -91,15 +101,10 @@ class TasksController implements Controller {
     next: express.NextFunction
   ) => {
     const id = request.params.id;
-    const id1 = request.query.id1;
     const index = this.tasks.findIndex((task) => task.id === Number(id));
     if (index != -1) {
-      if (Number(id1) === this.tasks[index].idProject) {
-        response.send(
-          `La tâche "${this.tasks[index].taskName}" à été supprimé!`
-        );
-        this.tasks.splice(index, 1);
-      } else next(new ProjectNotFoundException(String(id1)));
+      response.send(`La tâche "${this.tasks[index].taskName}" à été supprimé!`);
+      this.tasks.splice(index, 1);
     } else next(new TaskNotFoundException(id));
   };
 
@@ -111,7 +116,7 @@ class TasksController implements Controller {
     const id = request.query.id;
     const newTask: Task[] = [];
     this.tasks.forEach((task) => {
-      if (task.idProject === Number(id)) {
+      if (task.projectId === Number(id)) {
         newTask.push(task);
       }
     });

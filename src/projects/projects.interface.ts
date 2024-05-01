@@ -1,7 +1,7 @@
 interface Project {
-    id: Number;
-    projectName: string;
-    idUser: Number;
+  id: Number;
+  projectName: string;
+  userId: Number;
 }
 
 export default Project;

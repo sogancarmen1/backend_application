@@ -4,7 +4,7 @@ export class CreateProjectDto {
   @IsString()
   public projectName: string;
   @IsString()
-  public userId: string;
+  public userId: Number;
 }
 
 export class UpdateProjectDto {

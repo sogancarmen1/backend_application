@@ -3,7 +3,7 @@ import Controller from "interfaces/controller.interface";
 import Project from "./projects.interface";
 import ProjectNotFoundException from "../exceptions/ProjectNotFoundException";
 import validationMiddleware from "../middlewares/validation.middleware";
-import {CreateProjectDto, UpdateProjectDto} from "./projects.dto";
+import { CreateProjectDto, UpdateProjectDto } from "./projects.dto";
 
 class ProjectsController implements Controller {
   public path = "/projects";
@@ -13,12 +13,12 @@ class ProjectsController implements Controller {
     {
       id: 1,
       projectName: "Nom du projet",
-      idUser: 4,
+      userId: 4,
     },
     {
       id: 2,
       projectName: "Nom du projet",
-      idUser: 8,
+      userId: 8,
     },
   ];
 
@@ -51,7 +51,7 @@ class ProjectsController implements Controller {
     const id = request.query.id;
     const allProjects: Project[] = [];
     this.projects.forEach((project) => {
-      if (project.idUser === Number(id)) {
+      if (project.userId === Number(id)) {
         allProjects.push(project);
       }
     });
@@ -63,8 +63,8 @@ class ProjectsController implements Controller {
     request: express.Request,
     response: express.Response
   ) => {
-    const project = request.body;
-    this.projects.push(project);
+    const project: CreateProjectDto = request.body;
+    this.projects.push({ id: 12, ...project });
     response.send(project);
   };
 

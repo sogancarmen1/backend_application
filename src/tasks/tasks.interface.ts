@@ -4,7 +4,7 @@ interface Task {
   dueDate: string;
   priority: string;
   status: string;
-  idProject: Number;
+  projectId: Number;
 }
 
 export default Task;

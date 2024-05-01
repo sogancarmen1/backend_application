@@ -1,8 +1,6 @@
 import { IsNumber, IsString } from "class-validator";
 
-class CreateTaskDto {
-  @IsNumber()
-  public id: Number;
+export class CreateTaskDto {
   @IsString()
   public taskName: string;
   @IsString()
@@ -15,4 +13,13 @@ class CreateTaskDto {
   public projectId: Number;
 }
 
-export default CreateTaskDto;
+export class updateTaskDto {
+  @IsString()
+  public taskName: string;
+  @IsString()
+  public dueDate: string;
+  @IsString()
+  public priority: string;
+  @IsString()
+  public status: string;
+}
