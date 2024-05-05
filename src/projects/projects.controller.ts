@@ -1,27 +1,19 @@
 import express, { Router } from "express";
 import Controller from "interfaces/controller.interface";
-import Project from "./projects.interface";
-import ProjectNotFoundException from "../exceptions/ProjectNotFoundException";
 import validationMiddleware from "../middlewares/validation.middleware";
 import { CreateProjectDto, UpdateProjectDto } from "./projects.dto";
+import PostgresProjectRepository from "./postgresProject.repository";
+import ProjectService from "./project.service";
+import PostgresUserRepository from "../users/postgresUser.repository";
+import UserService from "../users/user.service";
 
 class ProjectsController implements Controller {
   public path = "/projects";
   public router = express.Router();
-
-  private projects: Project[] = [
-    {
-      id: 1,
-      projectName: "Nom du projet",
-      userId: 4,
-    },
-    {
-      id: 2,
-      projectName: "Nom du projet",
-      userId: 8,
-    },
-  ];
-
+  private projectService = new ProjectService(
+    new PostgresProjectRepository(),
+    new UserService(new PostgresUserRepository())
+  );
   constructor() {
     this.initializeRoutes();
   }
@@ -43,77 +35,80 @@ class ProjectsController implements Controller {
     this.router.get(`${this.path}/:id`, this.getProjectById);
   }
 
-  private getAllProjects = (
+  private getAllProjects = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
-    const id = request.query.id;
-    const allProjects: Project[] = [];
-    this.projects.forEach((project) => {
-      if (project.userId === Number(id)) {
-        allProjects.push(project);
-      }
-    });
-    if (allProjects.length > 0) response.send(allProjects);
-    else next(new ProjectNotFoundException(String(id)));
+    try {
+      const id = request.query.id;
+      const allProjects = await this.projectService.findAllProject(String(id));
+      response.send(allProjects);
+    } catch (error) {
+      next(error);
+    }
   };
 
-  private createProject = (
+  private createProject = async (
     request: express.Request,
-    response: express.Response
+    response: express.Response,
+    next: express.NextFunction
   ) => {
-    const project: CreateProjectDto = request.body;
-    this.projects.push({ id: 12, ...project });
-    response.send(project);
+    try {
+      const project: CreateProjectDto = request.body;
+      await this.projectService.createProject(project);
+      response.send(`Project ${project.projectName} created`);
+    } catch (error) {
+      next(error);
+    }
   };
 
-  private modifyProject = (
+  private modifyProject = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
     const id = request.params.id;
     const newProject: UpdateProjectDto = request.body;
-    const index = this.projects.findIndex(
-      (project) => project.id === Number(id)
-    );
-    if (index != -1) {
-      this.projects[index].projectName = newProject.projectName;
-      response.send(newProject);
-    } else {
-      next(new ProjectNotFoundException(id));
+    try {
+      const projectUpdated = await this.projectService.updateProject(
+        Number(id),
+        newProject
+      );
+      response.send(projectUpdated);
+    } catch (error) {
+      next(error);
     }
   };
 
-  private deleteProject = (
+  private deleteProject = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
     const id = request.params.id;
-    const index = this.projects.findIndex(
-      (project) => project.id === Number(id)
-    );
-    if (index != -1) {
-      response.send(
-        `La tâche "${this.projects[index].projectName}" à été supprimée avec succès!`
-      );
-      this.projects.splice(index, 1);
-    } else {
-      next(new ProjectNotFoundException(id));
+    try {
+      await this.projectService.deleteProject(Number(id));
+      response.send(`Project with id ${id} has delete`);
+    } catch (error) {
+      next(error);
     }
   };
 
-  private getProjectById = (
+  private getProjectById = async (
     request: express.Request,
-    response: express.Response
+    response: express.Response,
+    next: express.NextFunction
   ) => {
-    const id = request.params.id;
-    const index = this.projects.findIndex(
-      (project) => project.id === Number(id)
-    );
-    response.send(this.projects[index].projectName);
+    try {
+      const id = request.params.id;
+      const projectFound = await this.projectService.findProjectById(
+        Number(id)
+      );
+      response.send(projectFound);
+    } catch (error) {
+      next(error);
+    }
   };
 }
 

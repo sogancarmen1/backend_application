@@ -1,5 +1,5 @@
 import User from "users/user.interface";
-import IUserRepository from "./IUserRepository";
+import IUserRepository from "./iUser.repository";
 
 class MemoryUserRepository implements IUserRepository {
   private users: User[] = [
@@ -19,11 +19,16 @@ class MemoryUserRepository implements IUserRepository {
     },
   ];
 
-  getAllUser(): User[] {
+  async getUserByEmail(userEmail: string): Promise<User> | null {
+    const index = this.users.findIndex((user) => user.email === userEmail);
+    return index != -1 ? this.users[index] : null;
+  }
+
+  async getAllUser(): Promise<User[]> {
     return this.users;
   }
 
-  getUserById(userId: Number): User | null {
+  async getUserById(userId: Number): Promise<User> | null {
     const index = this.users.findIndex((user) => user.id == userId);
     return index != -1 ? this.users[index] : null;
   }

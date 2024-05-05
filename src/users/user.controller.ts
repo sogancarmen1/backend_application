@@ -1,13 +1,13 @@
 import express, { Router } from "express";
 import Controller from "interfaces/controller.interface";
 import authMiddleware from "../middlewares/auth.middleware";
-import UserService from "./userService";
-import MemoryUserRepository from "./MemoryUserRepository";
+import UserService from "./user.service";
+import PostgresUserRepository from "./postgresUser.repository";
 
 class UserController implements Controller {
   public path = "/users";
   public router = express.Router();
-  private userService = new UserService(new MemoryUserRepository());
+  private userService = new UserService(new PostgresUserRepository());
 
   constructor() {
     this.initializeRoute();
@@ -15,7 +15,8 @@ class UserController implements Controller {
 
   public initializeRoute() {
     //Gerer les autorisations
-    this.router.get(this.path, authMiddleware, this.getAllUsers);
+    // this.router.get(this.path, authMiddleware, this.getAllUsers);
+    this.router.get(this.path, this.getAllUsers);
     this.router.get(`${this.path}/:id`, this.getUserById);
   }
 
@@ -26,18 +27,19 @@ class UserController implements Controller {
   ) => {
     try {
       const id = request.params.id;
-      const user = await this.userService.get_user_by_id(id);
-      response.send(user.firstName);
+      const user = await this.userService.findUserById(id);
+      response.send(user);
     } catch (error) {
       next(error);
     }
   };
 
-  private getAllUsers = (
+  private getAllUsers = async (
     request: express.Request,
     response: express.Response
   ) => {
-    response.send(this.userService.get_all_users());
+    const value = await this.userService.findAllUsers();
+    response.send(value);
   };
 }
 

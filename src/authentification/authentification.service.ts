@@ -8,48 +8,30 @@ import PasswordDontMatch from "../exceptions/PasswordDontMatch";
 import User from "users/user.interface";
 import DataStoredInToken from "token/interface.DataStorageInToken";
 import { CreateUserDto, LoginDto } from "users/user.dto";
+import UserService from "users/user.service";
 
 class AuthentificationService {
-  private users: User[] = [
-    {
-      id: 1,
-      firstName: "sogan",
-      lastName: "yaya",
-      email: "admin@gmail.com",
-      password: "123456789",
-    },
-    {
-      id: 2,
-      firstName: "carmen",
-      lastName: "yoyo",
-      email: "carmen@gmail.com",
-      password: "1234",
-    },
-  ];
+  userRepository: UserService;
+  constructor(repository: UserService) {
+    this.userRepository = repository;
+  }
 
   public async register(userData: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const existingUser = this.users.find(
-      (user) => user.email === userData.email
+    if (userData.password !== userData.confirmPassword) {
+      throw new PasswordDontMatch();
+    }
+    const existingUser = await this.userRepository.findUserByEmail(
+      userData.email
     );
     if (existingUser) {
       throw new UserWithThatEmailAlreadyExistsException(userData.email);
-    } else if (userData.password !== userData.confirmPassword) {
-      throw new PasswordDontMatch();
     }
-    const newUser: User = {
-      id: 8,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      password: hashedPassword,
-    };
-    this.users.push(newUser);
-    return newUser;
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    await this.userRepository.createdUser(userData, hashedPassword);
   }
 
-  public async logginIn(logInData: LoginDto) {
-    const user = this.users.find((user) => user.email === logInData.email);
+  public async loggin(logInData: LoginDto) {
+    const user = await this.userRepository.findUserByEmail(logInData.email);
     if (user != undefined) {
       const isPasswordMatching = await bcrypt.compare(
         logInData.password,

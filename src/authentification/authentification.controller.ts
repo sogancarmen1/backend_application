@@ -4,11 +4,15 @@ import { CreateUserDto } from "../users/user.dto";
 import { LoginDto } from "../users/user.dto";
 import validationMiddleware from "../middlewares/validation.middleware";
 import AuthentificationService from "./authentification.service";
+import PostgresUserRepository from "../users/postgresUser.repository";
+import UserService from "../users/user.service";
 
 class AuthentificationController implements Controller {
   public path = "/auth";
   public router = express.Router();
-  private authentificationService = new AuthentificationService();
+  private authentificationService = new AuthentificationService(
+    new UserService(new PostgresUserRepository())
+  );
 
   constructor() {
     this.initializeRoutes();
@@ -33,9 +37,13 @@ class AuthentificationController implements Controller {
     response: express.Response,
     next: express.NextFunction
   ) => {
-    const userData: CreateUserDto = request.body;
-    const user = await this.authentificationService.register(userData);
-    response.send(user.lastName + " " + user.lastName);
+    try {
+      const userData: CreateUserDto = request.body;
+      await this.authentificationService.register(userData);
+      response.send("you are registered");
+    } catch (error) {
+      next(error);
+    }
   };
 
   private logginIn = async (
@@ -45,7 +53,7 @@ class AuthentificationController implements Controller {
   ) => {
     try {
       const logInData: LoginDto = request.body;
-      const cookie = await this.authentificationService.logginIn(logInData);
+      const cookie = await this.authentificationService.loggin(logInData);
       response.setHeader("Set-Cookie", [cookie]);
       response.send("you are connected");
     } catch (error) {
