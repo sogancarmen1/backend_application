@@ -2,7 +2,6 @@ import express from "express";
 import Controller from "interfaces/controller.interface";
 import Task from "./tasks.interface";
 import TaskNotFoundException from "../exceptions/TaskNotFoundException";
-import ProjectNotFoundException from "../exceptions/ProjectNotFoundException";
 import validationMiddleware from "../middlewares/validation.middleware";
 import { CreateTaskDto, updateTaskDto } from "./tasks.dto";
 

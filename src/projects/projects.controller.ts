@@ -42,7 +42,9 @@ class ProjectsController implements Controller {
   ) => {
     try {
       const id = request.query.id;
-      const allProjects = await this.projectService.findAllProject(String(id));
+      const allProjects = await this.projectService.findAllProjectsForUser(
+        Number(id)
+      );
       response.send(allProjects);
     } catch (error) {
       next(error);
@@ -102,7 +104,7 @@ class ProjectsController implements Controller {
   ) => {
     try {
       const id = request.params.id;
-      const projectFound = await this.projectService.findProjectById(
+      const projectFound = await this.projectService.findProjectByIdForUser(
         Number(id)
       );
       response.send(projectFound);

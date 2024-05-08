@@ -27,7 +27,7 @@ class UserController implements Controller {
   ) => {
     try {
       const id = request.params.id;
-      const user = await this.userService.findUserById(id);
+      const user = await this.userService.findUserById(Number(id));
       response.send(user);
     } catch (error) {
       next(error);

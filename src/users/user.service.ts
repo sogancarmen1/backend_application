@@ -10,8 +10,8 @@ class UserService {
     this.repository = repository;
   }
 
-  public async findUserById(idUser: string) {
-    const user = await this.repository.getUserById(Number(idUser));
+  public async findUserById(idUser: Number) {
+    const user = await this.repository.getUserById(idUser);
     if (user == null) throw new UserNotFoundByIdException(idUser);
     return user;
   }

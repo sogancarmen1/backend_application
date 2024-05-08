@@ -13,30 +13,35 @@ class ProjectService {
     this.userService = userService;
   }
 
-  public async findAllProject(idUser: string) {
+  public async findAllProjectsForUser(idUser: Number) {
     await this.userService.findUserById(idUser);
-    const allProjects = await this.repository.getAllProject(Number(idUser));
+    const allProjects = await this.repository.getAllProjectForUser(idUser);
     if (allProjects.length == 0) throw new ProjectNotFoundUser(idUser);
     return allProjects;
   }
 
-  public async findProjectById(idProject: Number) {
-    const projectById = await this.repository.getProjectById(idProject);
+  public async findProjectByIdForUser(idProject: Number) {
+    const projectById = await this.repository.getProjectByIdForUser(idProject);
     if (projectById == null)
       throw new ProjectNotFoundException(String(idProject));
     return projectById;
   }
 
+  public async findProjectByNameForUser(projectName: string) {
+    const projectExist = await this.repository.getProjectByNameForUser(
+      projectName
+    );
+    if (projectExist == true)
+      throw new ProjectAlreadyExistException(projectName);
+  }
+
   public async deleteProject(idProject: Number) {
-    const project = await this.repository.deleteProject(idProject);
-    if (project == null) {
-      throw new ProjectNotFoundException(String(idProject));
-    }
-    return project;
+    await this.findProjectByIdForUser(idProject);
+    await this.repository.deleteProject(idProject);
   }
 
   public async createProject(project: CreateProjectDto) {
-    await this.userService.findUserById(String(project.userId));
+    await this.userService.findUserById(project.userId);
     const result = await this.repository.createProject(project);
     if (result != "") {
       throw new ProjectAlreadyExistException(project.projectName);
@@ -47,17 +52,11 @@ class ProjectService {
     idProject: Number,
     projectUpdated: UpdateProjectDto
   ) {
-    const value = await this.repository.updateProject(
-      idProject,
-      projectUpdated
-    );
-    if (value == null) {
-      throw new ProjectNotFoundException(String(idProject));
-    }
-    if (typeof value == "string") {
-      throw new ProjectAlreadyExistException(projectUpdated.projectName);
-    }
-    return value;
+    await this.findProjectByIdForUser(idProject);
+    await this.findProjectByNameForUser(projectUpdated.projectName);
+    await this.repository.updateProject(idProject, projectUpdated);
+    const projectUpdate = this.findProjectByIdForUser(idProject);
+    return projectUpdate;
   }
 }
 
