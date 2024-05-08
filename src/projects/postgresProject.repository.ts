@@ -41,7 +41,7 @@ class PostgresProjectRepository implements IProjectRepository {
     } catch (error) {}
   }
 
-  async getProjectByIdForUser(idProject: Number): Promise<Project | null> {
+  async getProjectById(idProject: Number): Promise<Project | null> {
     try {
       const result = await this.pool.query(
         "SELECT * FROM projects WHERE id = $1",
@@ -52,29 +52,22 @@ class PostgresProjectRepository implements IProjectRepository {
     } catch (error) {}
   }
 
-  async getProjectByNameForUser(projectName: string): Promise<boolean> {
+  async isProjectByNameExistForUser(projectName: string, idUser:Number): Promise<boolean> {
     const isProjectExist = await this.pool.query(
-      `SELECT * FROM projects WHERE projectname = $1`,
-      [projectName]
+      `SELECT * FROM projects WHERE projectname = $1 AND id_users =$2`,
+      [projectName, idUser]
     );
     if (isProjectExist.rowCount == 0) return false;
     return true;
   }
 
-  async createProject(project: CreateProjectDto): Promise<string> {
+  async createProject(project: CreateProjectDto): Promise<Project> {
     try {
-      const isProjectExist = await this.pool.query(
-        `SELECT * FROM projects WHERE projectname = $1 AND id_users = $2`,
-        [project.projectName, project.userId]
-      );
-      if (isProjectExist.rowCount > 0) {
-        return isProjectExist.rows[0].projectName;
-      }
-      await this.pool.query(
-        "INSERT INTO projects (id_users, projectname) VALUES ($1, $2)",
+      const result = await this.pool.query(
+        "INSERT INTO projects (id_users, projectname) VALUES ($1, $2) RETURNING * ",
         [project.userId, project.projectName]
       );
-      return "";
+      return this.convertRowToProject(result.rows[0]);
     } catch (error) {
       console.log(error);
     }
@@ -89,12 +82,13 @@ class PostgresProjectRepository implements IProjectRepository {
   async updateProject(
     idProject: Number,
     project: UpdateProjectDto
-  ): Promise<void> {
+  ): Promise<Project> {
     try {
-      await this.pool.query(
-        "UPDATE projects SET projectname = $1 WHERE id = $2",
+      const result = await this.pool.query(
+        "UPDATE projects SET projectname = $1 WHERE id = $2 RETURNING *",
         [project.projectName, idProject]
       );
+      return this.convertRowToProject(result.rows[0]);
     } catch (error) {}
   }
 }

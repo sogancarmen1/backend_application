@@ -104,7 +104,7 @@ class ProjectsController implements Controller {
   ) => {
     try {
       const id = request.params.id;
-      const projectFound = await this.projectService.findProjectByIdForUser(
+      const projectFound = await this.projectService.findProjectById(
         Number(id)
       );
       response.send(projectFound);

@@ -20,42 +20,40 @@ class ProjectService {
     return allProjects;
   }
 
-  public async findProjectByIdForUser(idProject: Number) {
-    const projectById = await this.repository.getProjectByIdForUser(idProject);
+  public async findProjectById(idProject: Number) {
+    const projectById = await this.repository.getProjectById(idProject);
     if (projectById == null)
       throw new ProjectNotFoundException(String(idProject));
     return projectById;
   }
 
-  public async findProjectByNameForUser(projectName: string) {
-    const projectExist = await this.repository.getProjectByNameForUser(
-      projectName
+  public async checkIfProjectNameAlreadyExistsForUser(projectName: string, idUser: Number) {
+    const projectExist = await this.repository.isProjectByNameExistForUser(
+      projectName,
+      idUser
     );
     if (projectExist == true)
       throw new ProjectAlreadyExistException(projectName);
   }
 
   public async deleteProject(idProject: Number) {
-    await this.findProjectByIdForUser(idProject);
+    await this.findProjectById(idProject);
     await this.repository.deleteProject(idProject);
   }
 
   public async createProject(project: CreateProjectDto) {
     await this.userService.findUserById(project.userId);
+    await this.checkIfProjectNameAlreadyExistsForUser(project.projectName , project.userId);
     const result = await this.repository.createProject(project);
-    if (result != "") {
-      throw new ProjectAlreadyExistException(project.projectName);
-    }
   }
 
   public async updateProject(
     idProject: Number,
     projectUpdated: UpdateProjectDto
   ) {
-    await this.findProjectByIdForUser(idProject);
-    await this.findProjectByNameForUser(projectUpdated.projectName);
-    await this.repository.updateProject(idProject, projectUpdated);
-    const projectUpdate = this.findProjectByIdForUser(idProject);
+    const project = await this.findProjectById(idProject);
+    await this.checkIfProjectNameAlreadyExistsForUser(projectUpdated.projectName , project.userId);
+    const projectUpdate = await this.repository.updateProject(idProject, projectUpdated);
     return projectUpdate;
   }
 }
