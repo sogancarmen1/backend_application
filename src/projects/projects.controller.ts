@@ -58,8 +58,8 @@ class ProjectsController implements Controller {
   ) => {
     try {
       const project: CreateProjectDto = request.body;
-      await this.projectService.createProject(project);
-      response.send(`Project ${project.projectName} created`);
+      const newProject = await this.projectService.createProject(project);
+      response.send(newProject);
     } catch (error) {
       next(error);
     }

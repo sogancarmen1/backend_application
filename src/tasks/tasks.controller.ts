@@ -1,40 +1,24 @@
 import express from "express";
 import Controller from "interfaces/controller.interface";
-import Task from "./tasks.interface";
-import TaskNotFoundException from "../exceptions/TaskNotFoundException";
 import validationMiddleware from "../middlewares/validation.middleware";
 import { CreateTaskDto, updateTaskDto } from "./tasks.dto";
+import TaskService from "./task.service";
+import PostgresTaskRepository from "./postgresTask.repository";
+import ProjectService from "../projects/project.service";
+import PostgresProjectRepository from "../projects/postgresProject.repository";
+import UserService from "../users/user.service";
+import PostgresUserRepository from "../users/postgresUser.repository";
 
 class TasksController implements Controller {
   public path = "/tasks";
   public router = express.Router();
-
-  public tasks: Task[] = [
-    {
-      id: 1,
-      taskName: "Le nom de la tâche",
-      dueDate: "12/02/2021",
-      priority: "High",
-      status: "in_progess",
-      projectId: 1,
-    },
-    {
-      id: 2,
-      taskName: "Le nom de la tâche 2",
-      dueDate: "14/08/2000",
-      priority: "Low",
-      status: "todo",
-      projectId: 1,
-    },
-    {
-      id: 3,
-      taskName: "Le nom de la tâche 28",
-      dueDate: "20/12/2023",
-      priority: "Average",
-      status: "done",
-      projectId: 2,
-    },
-  ];
+  private taskService = new TaskService(
+    new PostgresTaskRepository(),
+    new ProjectService(
+      new PostgresProjectRepository(),
+      new UserService(new PostgresUserRepository())
+    )
+  );
 
   constructor() {
     this.initializeRoutes();
@@ -52,76 +36,82 @@ class TasksController implements Controller {
       this.modifyTaskInProject
     );
     this.router.delete(`${this.path}/:id`, this.deleteTaskInProject);
-    this.router.get(this.path, this.getTaskByProject);
+    this.router.get(this.path, this.getAllTasksByProject);
     this.router.get(`${this.path}/:id`, this.getTaskById);
   }
 
-  private getTaskById = (
+  private getTaskById = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
-    const id = request.params.id;
-    const index = this.tasks.findIndex((task) => task.id === Number(id));
-    if (index != -1) {
-      response.send(this.tasks[index]);
-    } else next(new TaskNotFoundException(id));
+    try {
+      const id = request.params.id;
+      const task = await this.taskService.findTaskById(Number(id));
+      response.send(task);
+    } catch (error) {
+      next(error);
+    }
   };
 
-  private createTaskInProject = (
-    request: express.Request,
-    response: express.Response
-  ) => {
-    const task: CreateTaskDto = request.body;
-    this.tasks.push({ id: 12, ...task });
-    response.send(task);
-  };
-
-  private modifyTaskInProject = (
+  private createTaskInProject = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
-    const id = request.params.id;
-    const newTask: updateTaskDto = request.body;
-    const index = this.tasks.findIndex((task) => task.id === Number(id));
-    if (index != -1) {
-      this.tasks[index].taskName = newTask.taskName;
-      this.tasks[index].dueDate = newTask.dueDate;
-      this.tasks[index].priority = newTask.priority;
-      this.tasks[index].status = newTask.status;
+    try {
+      const task: CreateTaskDto = request.body;
+      const newTask = await this.taskService.createTask(task);
       response.send(newTask);
-    } else next(new TaskNotFoundException(id));
+    } catch (error) {
+      next(error);
+    }
   };
 
-  private deleteTaskInProject = (
+  private modifyTaskInProject = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
-    const id = request.params.id;
-    const index = this.tasks.findIndex((task) => task.id === Number(id));
-    if (index != -1) {
-      response.send(`La tâche "${this.tasks[index].taskName}" à été supprimé!`);
-      this.tasks.splice(index, 1);
-    } else next(new TaskNotFoundException(id));
+    try {
+      const id = request.params.id;
+      const taskUpdate: updateTaskDto = request.body;
+      const taskUpdated = await this.taskService.updateTask(
+        Number(id),
+        taskUpdate
+      );
+      response.send(taskUpdated);
+    } catch (error) {
+      next(error);
+    }
   };
 
-  private getTaskByProject = (
+  private deleteTaskInProject = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
-    const id = request.query.id;
-    const newTask: Task[] = [];
-    this.tasks.forEach((task) => {
-      if (task.projectId === Number(id)) {
-        newTask.push(task);
-      }
-    });
-    if (newTask.length > 0) response.send(newTask);
-    //Revoir comment écrire l'erreur ici
-    else next(new TaskNotFoundException(String(id)));
+    try {
+      const id = request.params.id;
+      await this.taskService.deleteTask(Number(id));
+      response.send(`Task with id ${id} has delete`);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  private getAllTasksByProject = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const id = request.query.id;
+      const allTasks = await this.taskService.findAllTasksByProject(Number(id));
+      response.send(allTasks);
+    } catch (error) {
+      next(error);
+    }
   };
 }
 

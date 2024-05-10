@@ -4,10 +4,13 @@ import Project from "projects/projects.interface";
 interface IProjectRepository {
   getAllProjectForUser(idUser: Number): Promise<Project[] | []>;
   getProjectByIdForUser(idProject: Number): Promise<Project | null>;
-  getProjectByNameForUser(projectName: string): Promise<boolean>;
-  updateProject(idProject: Number, project: UpdateProjectDto): Promise<void>;
+  isProjectByNameExistForUser(
+    projectName: string,
+    idUser: Number
+  ): Promise<boolean>;
+  updateProject(idProject: Number, project: UpdateProjectDto): Promise<Project>;
   deleteProject(idProject: Number): Promise<void>;
-  createProject(project: CreateProjectDto): Promise<string>;
+  createProject(project: CreateProjectDto): Promise<Project>;
 }
 
 export default IProjectRepository;
