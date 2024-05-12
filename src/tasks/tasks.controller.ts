@@ -1,7 +1,7 @@
 import express from "express";
 import Controller from "interfaces/controller.interface";
 import validationMiddleware from "../middlewares/validation.middleware";
-import { CreateTaskDto, updateTaskDto } from "./tasks.dto";
+import { assignToDto, CreateTaskDto, updateTaskDto } from "./tasks.dto";
 import TaskService from "./task.service";
 import PostgresTaskRepository from "./postgresTask.repository";
 import ProjectService from "../projects/project.service";
@@ -17,7 +17,8 @@ class TasksController implements Controller {
     new ProjectService(
       new PostgresProjectRepository(),
       new UserService(new PostgresUserRepository())
-    )
+    ),
+    new UserService(new PostgresUserRepository())
   );
 
   constructor() {
@@ -38,7 +39,47 @@ class TasksController implements Controller {
     this.router.delete(`${this.path}/:id`, this.deleteTaskInProject);
     this.router.get(this.path, this.getAllTasksByProject);
     this.router.get(`${this.path}/:id`, this.getTaskById);
+    this.router.post(`${this.path}/assign-to`, this.assignedTo);
+    this.router.delete(`${this.path}/:id/assign-to`, this.referTo);
   }
+
+  private referTo = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const id = request.params.id;
+      const id1 = request.query.id1;
+      await this.taskService.referTo(Number(id), Number(id1));
+      response.send(`Task with id ${id} is unassigned`);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  private assignedTo = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const idProject = request.query.idProject;
+      console.log(idProject);
+      const userEmail: assignToDto = request.body;
+      const taskWithResponstable = this.taskService.assinTo(
+        userEmail,
+        Number(idProject)
+      );
+      response.send(
+        `User with email ${userEmail.email} has assigned to task ${
+          (await taskWithResponstable).taskName
+        }`
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
 
   private getTaskById = async (
     request: express.Request,

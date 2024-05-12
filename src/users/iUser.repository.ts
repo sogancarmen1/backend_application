@@ -5,7 +5,7 @@ interface IUserRepository {
   getAllUser(): Promise<User[]>;
   getUserById(userId: Number): Promise<User> | Promise<null>;
   getUserByEmail(userEmail: string): Promise<User> | null;
-  createUser(user: CreateUserDto, hashedPassword: string): Promise<null>;
+  createUser(user: CreateUserDto, hashedPassword: string): Promise<User>;
 }
 
 export default IUserRepository;

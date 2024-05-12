@@ -3,14 +3,36 @@ import ITaskRepository from "./taskRepository.interface";
 import TaskNotFoundException from "../exceptions/TaskNotFoundException";
 import TaskNotFoundInProject from "../exceptions/TaskNotFoundInProject";
 import TaskAlreadyExistException from "../exceptions/TaskAlreadyExistExceptions";
-import { CreateTaskDto, updateTaskDto } from "./tasks.dto";
+import { assignToDto, CreateTaskDto, updateTaskDto } from "./tasks.dto";
+import UserService from "users/user.service";
 
 class TaskService {
   repository: ITaskRepository;
   projectService: ProjectService;
-  constructor(repository: ITaskRepository, projectService: ProjectService) {
+  userService: UserService;
+  constructor(
+    repository: ITaskRepository,
+    projectService: ProjectService,
+    userService: UserService
+  ) {
     this.repository = repository;
     this.projectService = projectService;
+    this.userService = userService;
+  }
+
+  public async assinTo(emailUser: assignToDto, idProject: Number) {
+    const user = await this.userService.findUserByEmail(emailUser.email);
+    await this.projectService.findProjectByIdForUser(idProject);
+    await this.findTaskById(emailUser.taskId);
+    await this.projectService.findMemberById(idProject, user.id);
+    const value = await this.repository.assingTo(emailUser, idProject);
+    return value;
+  }
+
+  public async referTo(idProject: Number, taskId: Number) {
+    await this.projectService.findProjectByIdForUser(idProject);
+    await this.findTaskById(taskId);
+    await this.repository.referTo(idProject, taskId);
   }
 
   public async findAllTasksByProject(idProject: Number) {
@@ -44,6 +66,10 @@ class TaskService {
 
   public async createTask(task: CreateTaskDto) {
     await this.projectService.findProjectByIdForUser(task.projectId);
+    if (task.assignedTo != undefined) {
+      const user = await this.userService.findUserByEmail(task.assignedTo);
+      await this.projectService.findMemberById(task.projectId, user.id);
+    }
     await this.checkIfTaskNameAlreadyExistsInProject(
       task.taskName,
       task.projectId

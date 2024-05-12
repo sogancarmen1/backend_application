@@ -6,6 +6,8 @@ import PostgresProjectRepository from "./postgresProject.repository";
 import ProjectService from "./project.service";
 import PostgresUserRepository from "../users/postgresUser.repository";
 import UserService from "../users/user.service";
+import Members from "members/members.interface";
+import AddMemberDto from "members/member.dto";
 
 class ProjectsController implements Controller {
   public path = "/projects";
@@ -33,7 +35,59 @@ class ProjectsController implements Controller {
     );
     this.router.delete(`${this.path}/:id`, this.deleteProject);
     this.router.get(`${this.path}/:id`, this.getProjectById);
+    this.router.post(`${this.path}/add-members`, this.addMembers);
+    this.router.get(`${this.path}/add-members/:id`, this.getMemberById);
+    this.router.delete(`${this.path}/add-members/:id`, this.removeMember);
   }
+
+  private removeMember = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const idUser = request.params.id;
+      const idProject = request.query.idProject;
+      await this.projectService.removeMember(Number(idProject), Number(idUser));
+      response.send(
+        `User with id ${idUser} has remove from project with id ${idProject}`
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  private getMemberById = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const idUser = request.params.id;
+      const idProject = request.query.idProject;
+      const member: Members = await this.projectService.findMemberById(
+        Number(idProject),
+        Number(idUser)
+      );
+      response.send(member);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  private addMembers = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const members: AddMemberDto[] = request.body;
+      const membersAdded = await this.projectService.addMember(members);
+      response.send(membersAdded);
+    } catch (error) {
+      next(error);
+    }
+  };
 
   private getAllProjects = async (
     request: express.Request,

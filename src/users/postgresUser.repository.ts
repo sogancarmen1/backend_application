@@ -20,10 +20,11 @@ class PostgresUserRepository implements IUserRepository {
   private convertRowToUser(row: any) {
     const userFound: User = {
       id: row.id,
-      firstName: row.firstname,
-      lastName: row.lastname,
       email: row.email,
+      firstName: row.first_name,
+      lastName: row.last_name,
       password: row.password,
+      role: row.role,
     };
     return userFound;
   }
@@ -63,17 +64,13 @@ class PostgresUserRepository implements IUserRepository {
     } catch (error) {}
   }
 
-  async createUser(user: CreateUserDto, hashedPassword: string): Promise<null> {
+  async createUser(user: CreateUserDto, hashedPassword: string): Promise<User> {
     try {
       const result = await this.pool.query(
-        `SELECT * FROM users WHERE email = $1`,
-        [user.email]
+        `INSERT INTO users (email, first_name, last_name, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [user.email, user.firstName, user.lastName, hashedPassword, "user"]
       );
-      if (result.rowCount > 0) return null;
-      await this.pool.query(
-        `INSERT INTO users (firstname, email, lastname, password) VALUES ($1, $2, $3, $4)`,
-        [user.firstName, user.email, user.lastName, hashedPassword]
-      );
+      return this.convertRowToUser(result.rows[0]);
     } catch (error) {}
   }
 }

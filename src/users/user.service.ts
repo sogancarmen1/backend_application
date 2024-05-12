@@ -1,7 +1,7 @@
 import UserNotFoundByIdException from "../exceptions/userNotFoundByIdException";
-import UserNotFoundByEmailException from "../exceptions/userNotFoundByEmailException";
 import { CreateUserDto } from "./user.dto";
 import IUserRepository from "./iUser.repository";
+import UserNotFoundByEmailException from "../exceptions/userNotFoundByEmailException";
 
 class UserService {
   repository: IUserRepository;
@@ -22,11 +22,9 @@ class UserService {
   }
 
   public async findUserByEmail(emailUser: string) {
-    try {
-      const user = await this.repository.getUserByEmail(emailUser);
-      if (user == null) throw new UserNotFoundByEmailException(emailUser);
-      return user;
-    } catch (error) {}
+    const user = await this.repository.getUserByEmail(emailUser);
+    if (user == null) throw new UserNotFoundByEmailException(emailUser);
+    return user;
   }
   public async createdUser(user: CreateUserDto, passwordHashed: string) {
     await this.repository.createUser(user, passwordHashed);

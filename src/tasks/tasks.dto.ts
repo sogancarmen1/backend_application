@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsEmail, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateTaskDto {
   @IsString()
@@ -11,6 +11,12 @@ export class CreateTaskDto {
   public status: string;
   @IsNumber()
   public projectId: Number;
+  @IsOptional()
+  @IsString()
+  @IsEmail()
+  public assignedTo: string;
+  @IsOptional()
+  public description: string;
 }
 
 export class updateTaskDto {
@@ -22,4 +28,15 @@ export class updateTaskDto {
   public priority: string;
   @IsString()
   public status: string;
+  @IsOptional()
+  @IsString()
+  public description: string;
+}
+
+export class assignToDto {
+  @IsString()
+  @IsEmail()
+  public email: string;
+  @IsString()
+  public taskId: Number;
 }
