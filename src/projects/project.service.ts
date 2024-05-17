@@ -43,17 +43,8 @@ class ProjectService {
   }
 
   public async deleteProject(idProject: Number) {
-    await this.deleteProjectWithAllMembers(idProject);
+    await this.findProjectById(idProject);
     await this.repository.deleteProject(idProject);
-  }
-
-  private convertAddMemberDtoToString(
-    addMemberDto: AddMemberDto[],
-    idProject: Number
-  ) {
-    return addMemberDto
-      .map((member) => `(${member.idUser}, ${idProject}, '${member.roleType}')`)
-      .join(", ");
   }
 
   public async addMembers(members: AddMemberDto[], idProject: Number) {
@@ -68,9 +59,7 @@ class ProjectService {
         throw new UserIsAlreadyInProjectException(member.idUser, idProject);
       }
     }
-    const addedMember = await this.repository.addMembers(
-      this.convertAddMemberDtoToString(members, idProject)
-    );
+    const addedMember = await this.repository.addMembers(members, idProject);
     return addedMember;
   }
 
@@ -87,30 +76,16 @@ class ProjectService {
     for (const id of membersId) {
       await this.findMemberById(idProject, Number(id));
     }
-    const idOfMembers = membersId
-      .map((idMember) => `${Number(idMember)}`)
-      .join(", ");
-    await this.repository.removeMembers(`(${idOfMembers})`, idProject);
-  }
-
-  public async deleteProjectWithAllMembers(idProject: Number) {
-    await this.findProjectById(idProject);
-    await this.repository.deleteProjectWithAllMembers(idProject);
+    await this.repository.removeMembers(membersId, idProject);
   }
 
   public async createProject(project: CreateProjectDto) {
-    const projectFoundByName = await this.repository.getProjectByName(
-      project.name
-    );
+    await this.userService.findUserById(project.userId);
     await this.checkIfProjectNameAlreadyExistsForUser(
       project.name,
       project.userId
     );
     const result = await this.repository.createProject(project);
-    await this.addMembers(
-      [{ idUser: project.userId, roleType: "owner" }],
-      projectFoundByName.id
-    );
     return result;
   }
 
@@ -124,6 +99,7 @@ class ProjectService {
     idProject: Number,
     projectUpdated: UpdateProjectDto
   ) {
+    await this.findProjectById(idProject);
     const allMembers: Members[] = await this.findAllMembers(idProject);
     const member = allMembers.find((member) => {
       return member.roleType === "owner";

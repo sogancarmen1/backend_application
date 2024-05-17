@@ -13,12 +13,11 @@ interface IProjectRepository {
   ): Promise<boolean>;
   updateProject(idProject: Number, project: UpdateProjectDto): Promise<Project>;
   deleteProject(idProject: Number): Promise<void>;
-  createProject(project: CreateProjectDto): Promise<Project>;
-  addMembers(members: string): Promise<any[]>;
+  createProject(project: CreateProjectDto): Promise<any>;
+  addMembers(members: AddMemberDto[], idProject: Number): Promise<any[]>;
   getAllMembers(idProject: Number): Promise<Members[] | []>;
-  deleteProjectWithAllMembers(idProject: Number): Promise<void>;
   getMemberById(idProject: Number, idUser: Number): Promise<Members>;
-  removeMembers(membersId: string, idProject: Number): Promise<void>;
+  removeMembers(membersId: string[], idProject: Number): Promise<void>;
 }
 
 export default IProjectRepository;

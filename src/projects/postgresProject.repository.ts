@@ -36,6 +36,15 @@ class PostgresProjectRepository implements IProjectRepository {
     return member;
   }
 
+  private convertAddMemberDtoToString(
+    addMemberDto: AddMemberDto[],
+    idProject: Number
+  ) {
+    return addMemberDto
+      .map((member) => `(${member.idUser}, ${idProject}, '${member.roleType}')`)
+      .join(", ");
+  }
+
   async getMemberById(idProject: Number, idUser: Number): Promise<Members> {
     try {
       const result = await this.pool.query(
@@ -47,23 +56,29 @@ class PostgresProjectRepository implements IProjectRepository {
     } catch (error) {}
   }
 
-  async removeMembers(membersId: string, idProject: Number): Promise<void> {
+  async removeMembers(membersId: string[], idProject: Number): Promise<void> {
     try {
+      const idOfMembers = membersId
+        .map((idMember) => `${Number(idMember)}`)
+        .join(", ");
       await this.pool.query(
         "DELETE FROM members WHERE id_users IN " +
-          membersId +
+          `(${idOfMembers})` +
           " AND id_projects = $1",
         [idProject]
       );
     } catch (error) {}
   }
 
-  async addMembers(members: string): Promise<Members[]> {
+  async addMembers(members: AddMemberDto[], idProject: Number): Promise<any[]> {
     try {
-      //Prendre le tableau en parametre et faire la conversion ici
+      const addMemberDtoToString = this.convertAddMemberDtoToString(
+        members,
+        idProject
+      );
       const result = await this.pool.query(
         "INSERT INTO members(id_users, id_projects, role_type) VALUES " +
-          members +
+          addMemberDtoToString +
           " RETURNING *"
       );
       return result.rows;
@@ -133,32 +148,22 @@ class PostgresProjectRepository implements IProjectRepository {
     } catch (error) {}
   }
 
-  async createProject(project: CreateProjectDto): Promise<Project> {
+  async createProject(project: CreateProjectDto): Promise<any> {
     try {
-      //Faire une transaction
       const result = await this.pool.query(
-        "INSERT INTO projects (name, description) VALUES ($1, $2) RETURNING *",
-        [project.name, project.description]
+        `WITH new_project AS (INSERT INTO projects (name, description) VALUES ($1, $2) RETURNING id) INSERT INTO members (id_users, id_projects, role_type) SELECT $3, id, 'owner' FROM new_project RETURNING *`,
+        [project.name, project.description, project.userId]
       );
-      return this.convertRowToProject(result.rows[0]);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  //Mettre ça en private
-  async deleteProjectWithAllMembers(idProject: Number): Promise<void> {
-    try {
-      //Faire une transaction
-      await this.pool.query("DELETE FROM members WHERE id_projects = $1", [
-        idProject,
-      ]);
+      return result.rows[0];
     } catch (error) {}
   }
 
   async deleteProject(idProject: Number): Promise<void> {
     try {
-      await this.pool.query("DELETE FROM projects WHERE id = $1", [idProject]);
+      await this.pool.query(
+        "WITH memberDeleted AS (DELETE FROM members WHERE id_projects = $1 RETURNING id_projects) DELETE FROM projects WHERE id IN (SELECT id_projects FROM memberDeleted)",
+        [idProject]
+      );
     } catch (error) {}
   }
 
