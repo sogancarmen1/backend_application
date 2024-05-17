@@ -1,9 +1,12 @@
 import HttpException from "./HttpException";
 
-class TaskNotFoundInProject extends HttpException {
-  constructor(idProject: Number) {
-    super(404, `Any task in project with id ${idProject}`);
+class TaskNotFoundByIdInProject extends HttpException {
+  constructor(idTask: Number, idProject: Number) {
+    super(
+      404,
+      `Task with id ${idTask} not found in project with id ${idProject}`
+    );
   }
 }
 
-export default TaskNotFoundInProject;
+export default TaskNotFoundByIdInProject;

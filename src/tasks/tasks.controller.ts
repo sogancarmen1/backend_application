@@ -39,8 +39,8 @@ class TasksController implements Controller {
     this.router.delete(`${this.path}/:id`, this.deleteTaskInProject);
     this.router.get(this.path, this.getAllTasksByProject);
     this.router.get(`${this.path}/:id`, this.getTaskById);
-    this.router.post(`${this.path}/assign-to`, this.assignedTo);
-    this.router.delete(`${this.path}/:id/assign-to`, this.referTo);
+    this.router.post(`${this.path}/:id/assignment`, this.assignedTo);
+    this.router.put(`${this.path}/:id/assignment`, this.referTo);
   }
 
   private referTo = async (
@@ -51,7 +51,7 @@ class TasksController implements Controller {
     try {
       const id = request.params.id;
       const id1 = request.query.id1;
-      await this.taskService.referTo(Number(id), Number(id1));
+      await this.taskService.referTo(Number(id1), Number(id));
       response.send(`Task with id ${id} is unassigned`);
     } catch (error) {
       next(error);
@@ -64,17 +64,16 @@ class TasksController implements Controller {
     next: express.NextFunction
   ) => {
     try {
+      const id = request.params.id;
       const idProject = request.query.idProject;
-      console.log(idProject);
-      const userEmail: assignToDto = request.body;
-      const taskWithResponstable = this.taskService.assinTo(
-        userEmail,
-        Number(idProject)
+      const user: assignToDto = request.body;
+      await this.taskService.assignTo(
+        Number(idProject.toString()),
+        Number(id),
+        user
       );
       response.send(
-        `User with email ${userEmail.email} has assigned to task ${
-          (await taskWithResponstable).taskName
-        }`
+        `User with id ${user.id} has assigned to task with id ${id}`
       );
     } catch (error) {
       next(error);

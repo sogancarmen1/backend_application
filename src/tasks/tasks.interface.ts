@@ -1,6 +1,6 @@
 interface Task {
   id: Number;
-  taskName: string;
+  name: string;
   dueDate: string;
   priority: string;
   status: string;

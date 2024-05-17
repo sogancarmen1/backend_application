@@ -19,7 +19,7 @@ class PostgresTaskRepository implements ITaskRepository {
   private convertRowToTask(row: any) {
     const task: Task = {
       id: row.id,
-      taskName: row.name,
+      name: row.name,
       dueDate: row.due_date,
       priority: row.priority,
       status: row.status,
@@ -30,13 +30,43 @@ class PostgresTaskRepository implements ITaskRepository {
     return task;
   }
 
-  async assingTo(emailUser: assignToDto, idProject: Number): Promise<Task> {
+  async isAssignedTo(idTask: Number, idProject: Number): Promise<boolean> {
+    try {
+      const result = await this.pool.query(
+        "SELECT * FROM tasks WHERE id = $1 AND id_projects = $2 AND assigned_to IS NOT NULL",
+        [idTask, idProject]
+      );
+      if (result.rowCount == 0) return false;
+      return true;
+    } catch (error) {}
+  }
+
+  async getTaskByIdInProject(
+    idTask: Number,
+    idProject: Number
+  ): Promise<Task | null> {
+    try {
+      const result = await this.pool.query(
+        "SELECT * FROM tasks WHERE id = $1 AND id_projects = $2",
+        [idTask, idProject]
+      );
+      if (result.rowCount == 0) return null;
+      const task: Task = this.convertRowToTask(result.rows[0]);
+      return task;
+    } catch (error) {}
+  }
+
+  async assignTo(
+    idProject: Number,
+    idTask: Number,
+    user: assignToDto
+  ): Promise<Task | null> {
     try {
       const result = await this.pool.query(
         "UPDATE tasks SET assigned_to = $1 WHERE id_projects = $2 AND id = $3 RETURNING * ",
-        [emailUser.email, idProject, emailUser.taskId]
+        [user.id, idProject, idTask]
       );
-      const value = this.convertRowToTask(result.rows[0]);
+      const value: Task = this.convertRowToTask(result.rows[0]);
       return value;
     } catch (error) {}
   }
@@ -70,7 +100,7 @@ class PostgresTaskRepository implements ITaskRepository {
         "INSERT INTO tasks (id_projects, name, priority, due_date, status, assigned_to, description) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
         [
           task.projectId,
-          task.taskName,
+          task.name,
           task.priority,
           task.dueDate,
           task.status,
@@ -87,7 +117,7 @@ class PostgresTaskRepository implements ITaskRepository {
       const result = await this.pool.query(
         "UPDATE tasks SET name = $1, priority = $2, status = $3, due_date = $4, description = $5 WHERE id = $5 RETURNING * ",
         [
-          task.taskName,
+          task.name,
           task.priority,
           task.status,
           task.dueDate,

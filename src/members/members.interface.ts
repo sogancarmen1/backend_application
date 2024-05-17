@@ -1,6 +1,6 @@
 interface Members {
   id: Number;
-  userEmail: string;
+  email: string;
   roleType: string;
 }
 

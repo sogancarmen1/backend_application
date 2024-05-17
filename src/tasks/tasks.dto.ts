@@ -2,7 +2,7 @@ import { IsEmail, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateTaskDto {
   @IsString()
-  public taskName: string;
+  public name: string;
   @IsString()
   public dueDate: string;
   @IsString()
@@ -21,7 +21,7 @@ export class CreateTaskDto {
 
 export class updateTaskDto {
   @IsString()
-  public taskName: string;
+  public name: string;
   @IsString()
   public dueDate: string;
   @IsString()
@@ -35,8 +35,5 @@ export class updateTaskDto {
 
 export class assignToDto {
   @IsString()
-  @IsEmail()
-  public email: string;
-  @IsString()
-  public taskId: Number;
+  public id: Number;
 }

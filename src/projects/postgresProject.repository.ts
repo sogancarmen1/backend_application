@@ -21,8 +21,8 @@ class PostgresProjectRepository implements IProjectRepository {
   private convertRowToProject(row: any) {
     const project: Project = {
       id: row.id,
-      projectName: row.name,
-      projectDescription: row.description,
+      name: row.name,
+      description: row.description,
     };
     return project;
   }
@@ -30,7 +30,7 @@ class PostgresProjectRepository implements IProjectRepository {
   private convertRowToMember(row: any) {
     const member: Members = {
       id: row.id,
-      userEmail: row.email,
+      email: row.email,
       roleType: row.role_type,
     };
     return member;
@@ -39,7 +39,7 @@ class PostgresProjectRepository implements IProjectRepository {
   async getMemberById(idProject: Number, idUser: Number): Promise<Members> {
     try {
       const result = await this.pool.query(
-        "SELECT * FROM users JOIN many_users_has_many_projects ON users.id = many_users_has_many_projects.id_users WHERE many_users_has_many_projects.id_users = $1 AND many_users_has_many_projects.id_projects = $2",
+        "SELECT * FROM users JOIN members ON users.id = members.id_users WHERE members.id_users = $1 AND members.id_projects = $2",
         [idUser, idProject]
       );
       const member: Members = this.convertRowToMember(result.rows[0]);
@@ -47,35 +47,34 @@ class PostgresProjectRepository implements IProjectRepository {
     } catch (error) {}
   }
 
-  async removeMember(idProject: Number, idUser: Number): Promise<void> {
+  async removeMembers(membersId: string, idProject: Number): Promise<void> {
     try {
       await this.pool.query(
-        "DELETE FROM many_users_has_many_projects WHERE id_users = $1 AND id_projects = $2",
-        [idUser, idProject]
+        "DELETE FROM members WHERE id_users IN " +
+          membersId +
+          " AND id_projects = $1",
+        [idProject]
       );
+    } catch (error) {}
+  }
+
+  async addMembers(members: string): Promise<Members[]> {
+    try {
+      const result = await this.pool.query(
+        "INSERT INTO members(id_users, id_projects, role_type) VALUES " +
+          members +
+          " RETURNING *"
+      );
+      return result.rows;
     } catch (error) {
       console.log(error);
     }
   }
 
-  async addMember(members: AddMemberDto[]): Promise<Members[]> {
-    try {
-      const insertionResults = [];
-      for (const member of members) {
-        const result = await this.pool.query(
-          "INSERT INTO many_users_has_many_projects(id_users, id_projects, role_type) VALUES ($1, $2, $3) RETURNING *",
-          [member.idUser, member.idProject, member.roleType]
-        );
-        insertionResults.push(result.rows[0]);
-      }
-      return insertionResults;
-    } catch (error) {}
-  }
-
   async getAllMembers(idProject: Number): Promise<Members[] | []> {
     try {
       const result = await this.pool.query(
-        "SELECT * FROM users JOIN many_users_has_many_projects ON users.id = many_users_has_many_projects.id_users WHERE many_users_has_many_projects.id_projects = $1",
+        "SELECT * FROM users JOIN members ON users.id = members.id_users WHERE members.id_projects = $1",
         [idProject]
       );
       const members: Members[] = result.rows.map((member) => {
@@ -85,10 +84,10 @@ class PostgresProjectRepository implements IProjectRepository {
     } catch (error) {}
   }
 
-  async getAllProjectForUser(idUser: Number): Promise<Project[] | []> {
+  async getAllProjects(idUser: Number): Promise<Project[] | []> {
     try {
       const result = await this.pool.query(
-        "SELECT * FROM projects JOIN many_users_has_many_projects ON projects.id = many_users_has_many_projects.id_projects WHERE many_users_has_many_projects.id_users = $1",
+        "SELECT * FROM projects JOIN members ON projects.id = members.id_projects WHERE members.id_users = $1",
         [idUser]
       );
       if (result.rowCount == 0) return [];
@@ -99,7 +98,7 @@ class PostgresProjectRepository implements IProjectRepository {
     } catch (error) {}
   }
 
-  async getProjectByIdForUser(idProject: Number): Promise<Project | null> {
+  async getProjectById(idProject: Number): Promise<Project | null> {
     try {
       const result = await this.pool.query(
         "SELECT * FROM projects WHERE id = $1",
@@ -115,27 +114,42 @@ class PostgresProjectRepository implements IProjectRepository {
     idUser: Number
   ): Promise<boolean> {
     const isProjectExist = await this.pool.query(
-      `SELECT * FROM projects JOIN many_users_has_many_projects ON projects.id = many_users_has_many_projects.id_projects WHERE projects.name = $1 AND many_users_has_many_projects.id_users = $2`,
+      `SELECT * FROM projects JOIN members ON projects.id = members.id_projects WHERE projects.name = $1 AND members.id_users = $2`,
       [projectName, idUser]
     );
     if (isProjectExist.rowCount == 0) return false;
     return true;
   }
 
-  async createProject(project: CreateProjectDto): Promise<Project> {
+  async getProjectByName(name: String): Promise<Project | null> {
     try {
       const result = await this.pool.query(
-        "INSERT INTO projects (name, description) VALUES ($1, $2) RETURNING *",
-        [project.projectName, project.description]
+        "SELECT * FROM projects WHERE name = $1",
+        [name]
       );
+      if (result.rowCount == 0) return null;
       return this.convertRowToProject(result.rows[0]);
     } catch (error) {}
   }
 
-  async deleteProjectWithAllMember(idProject: Number): Promise<void> {
+  async createProject(project: CreateProjectDto): Promise<Project> {
     try {
+      //Faire une transaction
+      const result = await this.pool.query(
+        "INSERT INTO projects (name, description) VALUES ($1, $2) RETURNING *",
+        [project.name, project.description]
+      );
+      return this.convertRowToProject(result.rows[0]);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async deleteProjectWithAllMembers(idProject: Number): Promise<void> {
+    try {
+      //Faire une transaction
       await this.pool.query(
-        "DELETE FROM many_users_has_many_projects WHERE id_projects = $1",
+        "DELETE FROM members WHERE id_projects = $1",
         [idProject]
       );
     } catch (error) {}
@@ -154,12 +168,10 @@ class PostgresProjectRepository implements IProjectRepository {
     try {
       const result = await this.pool.query(
         "UPDATE projects SET name = $1, description = $2 WHERE id = $3 RETURNING * ",
-        [project.projectName, project.description, idProject]
+        [project.name, project.description, idProject]
       );
       return this.convertRowToProject(result.rows[0]);
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 }
 

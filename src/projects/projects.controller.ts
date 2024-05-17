@@ -35,22 +35,43 @@ class ProjectsController implements Controller {
     );
     this.router.delete(`${this.path}/:id`, this.deleteProject);
     this.router.get(`${this.path}/:id`, this.getProjectById);
-    this.router.post(`${this.path}/add-members`, this.addMembers);
-    this.router.get(`${this.path}/add-members/:id`, this.getMemberById);
-    this.router.delete(`${this.path}/add-members/:id`, this.removeMember);
+    this.router.post(`${this.path}/:id/members`, this.addMembers);
+    this.router.get(`${this.path}/:id/member`, this.getMemberById);
+    this.router.delete(`${this.path}/:id/members`, this.removeMembers);
+    this.router.get(`${this.path}/:id/members`, this.getAllMembers);
   }
 
-  private removeMember = async (
+  private getAllMembers = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
     try {
-      const idUser = request.params.id;
-      const idProject = request.query.idProject;
-      await this.projectService.removeMember(Number(idProject), Number(idUser));
+      const id = request.params.id;
+      const members: Members[] = await this.projectService.findAllMembers(
+        Number(id)
+      );
+      response.send(members);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  private removeMembers = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const id = request.params.id;
+      const usersId = request.query.usersId;
+      const myTab = [];
+      for (let i = 0; i < Number(usersId.length.toString()); i++) {
+        myTab.push(usersId[i]);
+      }
+      await this.projectService.removeMembers(myTab, Number(id));
       response.send(
-        `User with id ${idUser} has remove from project with id ${idProject}`
+        `Users with id ${usersId} has remove from project with id ${id}`
       );
     } catch (error) {
       next(error);
@@ -81,8 +102,12 @@ class ProjectsController implements Controller {
     next: express.NextFunction
   ) => {
     try {
+      const id = request.params.id;
       const members: AddMemberDto[] = request.body;
-      const membersAdded = await this.projectService.addMember(members);
+      const membersAdded = await this.projectService.addMembers(
+        members,
+        Number(id)
+      );
       response.send(membersAdded);
     } catch (error) {
       next(error);
@@ -158,7 +183,7 @@ class ProjectsController implements Controller {
   ) => {
     try {
       const id = request.params.id;
-      const projectFound = await this.projectService.findProjectByIdForUser(
+      const projectFound = await this.projectService.findProjectById(
         Number(id)
       );
       response.send(projectFound);

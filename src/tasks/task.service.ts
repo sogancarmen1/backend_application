@@ -1,10 +1,12 @@
 import ProjectService from "projects/project.service";
 import ITaskRepository from "./taskRepository.interface";
 import TaskNotFoundException from "../exceptions/TaskNotFoundException";
-import TaskNotFoundInProject from "../exceptions/TaskNotFoundInProject";
+import TasksNotFoundInProject from "../exceptions/TasksNotFoundInProject";
 import TaskAlreadyExistException from "../exceptions/TaskAlreadyExistExceptions";
 import { assignToDto, CreateTaskDto, updateTaskDto } from "./tasks.dto";
 import UserService from "users/user.service";
+import TaskNotFoundByIdInProject from "../exceptions/TaskNotFoundInProject";
+import TaskIsNotAssigned from "../exceptions/TaskIsNotAssigned";
 
 class TaskService {
   repository: ITaskRepository;
@@ -20,25 +22,35 @@ class TaskService {
     this.userService = userService;
   }
 
-  public async assinTo(emailUser: assignToDto, idProject: Number) {
-    const user = await this.userService.findUserByEmail(emailUser.email);
-    await this.projectService.findProjectByIdForUser(idProject);
-    await this.findTaskById(emailUser.taskId);
+  public async findTaskByIdInProject(idTask: Number, idProject: Number) {
+    const task = await this.repository.getTaskByIdInProject(idTask, idProject);
+    if (task == null) throw new TaskNotFoundByIdInProject(idTask, idProject);
+    return task;
+  }
+
+  public async assignTo(idProject: Number, idTask: Number, user: assignToDto) {
+    await this.userService.findUserById(user.id);
+    await this.projectService.findProjectById(idProject);
+    await this.findTaskById(idTask);
+    await this.findTaskByIdInProject(idTask, idProject);
     await this.projectService.findMemberById(idProject, user.id);
-    const value = await this.repository.assingTo(emailUser, idProject);
+    const value = await this.repository.assignTo(idProject, idTask, user);
     return value;
   }
 
   public async referTo(idProject: Number, taskId: Number) {
-    await this.projectService.findProjectByIdForUser(idProject);
+    await this.projectService.findProjectById(idProject);
     await this.findTaskById(taskId);
+    await this.findTaskByIdInProject(taskId, idProject);
+    const isAssigned = await this.repository.isAssignedTo(taskId, idProject);
+    if (isAssigned == false) throw new TaskIsNotAssigned(taskId);
     await this.repository.referTo(idProject, taskId);
   }
 
   public async findAllTasksByProject(idProject: Number) {
-    await this.projectService.findProjectByIdForUser(idProject);
+    await this.projectService.findProjectById(idProject);
     const allTasks = await this.repository.getAllTasksByProject(idProject);
-    if (allTasks.length == 0) throw new TaskNotFoundInProject(idProject);
+    if (allTasks.length == 0) throw new TasksNotFoundInProject(idProject);
     return allTasks;
   }
 
@@ -65,13 +77,13 @@ class TaskService {
   }
 
   public async createTask(task: CreateTaskDto) {
-    await this.projectService.findProjectByIdForUser(task.projectId);
+    await this.projectService.findProjectById(task.projectId);
     if (task.assignedTo != undefined) {
       const user = await this.userService.findUserByEmail(task.assignedTo);
       await this.projectService.findMemberById(task.projectId, user.id);
     }
     await this.checkIfTaskNameAlreadyExistsInProject(
-      task.taskName,
+      task.name,
       task.projectId
     );
     const result = await this.repository.createTask(task);
@@ -81,7 +93,7 @@ class TaskService {
   public async updateTask(idTask: Number, taskUpdated: updateTaskDto) {
     const task = await this.findTaskById(idTask);
     await this.checkIfTaskNameAlreadyExistsInProject(
-      taskUpdated.taskName,
+      taskUpdated.name,
       task.projectId
     );
     const taskUpdate = this.repository.updateTask(idTask, taskUpdated);

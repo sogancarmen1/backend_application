@@ -4,8 +4,9 @@ import { CreateProjectDto, UpdateProjectDto } from "projects/projects.dto";
 import Project from "projects/projects.interface";
 
 interface IProjectRepository {
-  getAllProjectForUser(idUser: Number): Promise<Project[] | []>;
-  getProjectByIdForUser(idProject: Number): Promise<Project | null>;
+  getAllProjects(idUser: Number): Promise<Project[] | []>;
+  getProjectById(idProject: Number): Promise<Project | null>;
+  getProjectByName(name: String): Promise<Project | null>;
   isProjectByNameExistForUser(
     projectName: string,
     idUser: Number
@@ -13,11 +14,11 @@ interface IProjectRepository {
   updateProject(idProject: Number, project: UpdateProjectDto): Promise<Project>;
   deleteProject(idProject: Number): Promise<void>;
   createProject(project: CreateProjectDto): Promise<Project>;
-  addMember(member: AddMemberDto[]): Promise<any[]>;
+  addMembers(members: string): Promise<any[]>;
   getAllMembers(idProject: Number): Promise<Members[] | []>;
-  deleteProjectWithAllMember(idProject: Number): Promise<void>;
+  deleteProjectWithAllMembers(idProject: Number): Promise<void>;
   getMemberById(idProject: Number, idUser: Number): Promise<Members>;
-  removeMember(idProject: Number, idUser: Number): Promise<void>;
+  removeMembers(membersId: string, idProject: Number): Promise<void>;
 }
 
 export default IProjectRepository;
