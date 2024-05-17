@@ -36,4 +36,6 @@ export class updateTaskDto {
 export class assignToDto {
   @IsString()
   public id: Number;
+  @IsString()
+  public idProject: Number;
 }

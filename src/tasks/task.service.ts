@@ -28,13 +28,13 @@ class TaskService {
     return task;
   }
 
-  public async assignTo(idProject: Number, idTask: Number, user: assignToDto) {
+  public async assignTo(idTask: Number, user: assignToDto) {
     await this.userService.findUserById(user.id);
-    await this.projectService.findProjectById(idProject);
+    await this.projectService.findProjectById(user.idProject);
     await this.findTaskById(idTask);
-    await this.findTaskByIdInProject(idTask, idProject);
-    await this.projectService.findMemberById(idProject, user.id);
-    const value = await this.repository.assignTo(idProject, idTask, user);
+    await this.findTaskByIdInProject(idTask, user.idProject);
+    await this.projectService.findMemberById(user.idProject, user.id);
+    const value = await this.repository.assignTo(idTask, user);
     return value;
   }
 
@@ -82,10 +82,7 @@ class TaskService {
       const user = await this.userService.findUserByEmail(task.assignedTo);
       await this.projectService.findMemberById(task.projectId, user.id);
     }
-    await this.checkIfTaskNameAlreadyExistsInProject(
-      task.name,
-      task.projectId
-    );
+    await this.checkIfTaskNameAlreadyExistsInProject(task.name, task.projectId);
     const result = await this.repository.createTask(task);
     return result;
   }

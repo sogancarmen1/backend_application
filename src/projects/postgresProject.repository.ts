@@ -60,6 +60,7 @@ class PostgresProjectRepository implements IProjectRepository {
 
   async addMembers(members: string): Promise<Members[]> {
     try {
+      //Prendre le tableau en parametre et faire la conversion ici
       const result = await this.pool.query(
         "INSERT INTO members(id_users, id_projects, role_type) VALUES " +
           members +
@@ -145,13 +146,13 @@ class PostgresProjectRepository implements IProjectRepository {
     }
   }
 
+  //Mettre ça en private
   async deleteProjectWithAllMembers(idProject: Number): Promise<void> {
     try {
       //Faire une transaction
-      await this.pool.query(
-        "DELETE FROM members WHERE id_projects = $1",
-        [idProject]
-      );
+      await this.pool.query("DELETE FROM members WHERE id_projects = $1", [
+        idProject,
+      ]);
     } catch (error) {}
   }
 

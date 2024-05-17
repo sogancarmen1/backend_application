@@ -57,14 +57,13 @@ class PostgresTaskRepository implements ITaskRepository {
   }
 
   async assignTo(
-    idProject: Number,
     idTask: Number,
     user: assignToDto
   ): Promise<Task | null> {
     try {
       const result = await this.pool.query(
         "UPDATE tasks SET assigned_to = $1 WHERE id_projects = $2 AND id = $3 RETURNING * ",
-        [user.id, idProject, idTask]
+        [user.id, user.idProject, idTask]
       );
       const value: Task = this.convertRowToTask(result.rows[0]);
       return value;

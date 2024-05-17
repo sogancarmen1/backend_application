@@ -39,11 +39,11 @@ class TasksController implements Controller {
     this.router.delete(`${this.path}/:id`, this.deleteTaskInProject);
     this.router.get(this.path, this.getAllTasksByProject);
     this.router.get(`${this.path}/:id`, this.getTaskById);
-    this.router.post(`${this.path}/:id/assignment`, this.assignedTo);
-    this.router.put(`${this.path}/:id/assignment`, this.referTo);
+    this.router.put(`${this.path}/:id/responsible`, this.assignedTo);
+    this.router.put(`${this.path}/:id/responsible`, this.unassigned);
   }
 
-  private referTo = async (
+  private unassigned = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
@@ -65,13 +65,8 @@ class TasksController implements Controller {
   ) => {
     try {
       const id = request.params.id;
-      const idProject = request.query.idProject;
       const user: assignToDto = request.body;
-      await this.taskService.assignTo(
-        Number(idProject.toString()),
-        Number(id),
-        user
-      );
+      await this.taskService.assignTo(Number(id), user);
       response.send(
         `User with id ${user.id} has assigned to task with id ${id}`
       );
