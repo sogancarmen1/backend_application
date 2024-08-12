@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import { Pool } from "pg";
 import Controller from "interfaces/controller.interface";
 import errorMiddleware from "./middlewares/erreur.middleware";
-import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
 
 class App {
   public app: express.Application;

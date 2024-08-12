@@ -20,9 +20,7 @@ class AuthentificationService {
     if (userData.password !== userData.confirmPassword) {
       throw new PasswordDontMatch();
     }
-    const existingUser = await this.userRepository.findUserByEmail(
-      userData.email
-    );
+    const existingUser = await this.userRepository.isEmailExist(userData.email);
     if (existingUser) {
       throw new UserWithThatEmailAlreadyExistsException(userData.email);
     }

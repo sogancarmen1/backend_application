@@ -21,6 +21,12 @@ class UserService {
     return value;
   }
 
+  public async isEmailExist(emailUser: string) {
+    const user = await this.repository.getUserByEmail(emailUser);
+    if (user == null) return false;
+    return true;
+  }
+
   public async findUserByEmail(emailUser: string) {
     const user = await this.repository.getUserByEmail(emailUser);
     if (user == null) throw new UserNotFoundByEmailException(emailUser);
