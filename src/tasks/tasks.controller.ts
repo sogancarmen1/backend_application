@@ -8,6 +8,8 @@ import ProjectService from "../projects/project.service";
 import PostgresProjectRepository from "../projects/postgresProject.repository";
 import UserService from "../users/user.service";
 import PostgresUserRepository from "../users/postgresUser.repository";
+import { Result } from "../utils/utils";
+import HttpException from "../exceptions/HttpException";
 
 class TasksController implements Controller {
   public path = "/tasks";
@@ -91,22 +93,28 @@ class TasksController implements Controller {
 
   private createTaskInProject = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const task: CreateTaskDto = request.body;
       const newTask = await this.taskService.createTask(task);
-      response.send(newTask);
+      response.status(201).send(new Result(true, "", newTask));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 
   private modifyTaskInProject = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const id = request.params.id;
@@ -115,37 +123,61 @@ class TasksController implements Controller {
         Number(id),
         taskUpdate
       );
-      response.send(taskUpdated);
+      response.status(201).send(new Result(true, "", taskUpdated));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 
   private deleteTaskInProject = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const id = request.params.id;
       await this.taskService.deleteTask(Number(id));
-      response.send(`Task with id ${id} has delete`);
+      response
+        .status(200)
+        .send(new Result(true, `Task with id ${id} has delete`, null));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 
   private getAllTasksByProject = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const id = request.query.id;
       const allTasks = await this.taskService.findAllTasksByProject(Number(id));
-      response.send(allTasks);
+      response.status(201).send(new Result(true, "", allTasks));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 }

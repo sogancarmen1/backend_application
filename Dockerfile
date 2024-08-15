@@ -8,7 +8,7 @@ COPY package.json ./
 
 RUN pnpm install
 
-COPY . .
+COPY . ./
 
 EXPOSE 3000
 

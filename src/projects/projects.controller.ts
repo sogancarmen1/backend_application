@@ -8,6 +8,8 @@ import PostgresUserRepository from "../users/postgresUser.repository";
 import UserService from "../users/user.service";
 import Members from "members/members.interface";
 import AddMemberDto from "members/member.dto";
+import { Result } from "../utils/utils";
+import HttpException from "../exceptions/HttpException";
 
 class ProjectsController implements Controller {
   public path = "/projects";
@@ -116,38 +118,51 @@ class ProjectsController implements Controller {
 
   private getAllProjects = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const id = request.query.id;
       const allProjects = await this.projectService.findAllProjectsForUser(
         Number(id)
       );
-      response.send(allProjects);
+      response.status(200).send(new Result(true, "", allProjects));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 
   private createProject = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const project: CreateProjectDto = request.body;
       const newProject = await this.projectService.createProject(project);
-      response.send(newProject);
+      response.status(201).send(new Result(true, "", newProject));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 
   private modifyProject = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     const id = request.params.id;
     const newProject: UpdateProjectDto = request.body;
@@ -156,23 +171,38 @@ class ProjectsController implements Controller {
         Number(id),
         newProject
       );
-      response.send(projectUpdated);
+      response.status(200).send(new Result(true, "", projectUpdated));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 
   private deleteProject = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     const id = request.params.id;
     try {
       await this.projectService.deleteProject(Number(id));
-      response.send(`Project with id ${id} has delete`);
+      response.status(200).send(new Result(true, "", null));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 

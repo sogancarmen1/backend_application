@@ -4,6 +4,7 @@ import { Pool } from "pg";
 import Controller from "interfaces/controller.interface";
 import errorMiddleware from "./middlewares/erreur.middleware";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 class App {
   public app: express.Application;
@@ -22,6 +23,23 @@ class App {
   private initializeMiddlewares() {
     this.app.use(bodyParser.json());
     this.app.use(cookieParser());
+    this.app.use(cors());
+    this.app.all("/*", function (req, res, next) {
+      res.header("Access-Control-Allow-Origin", "*");
+      res.header(
+        "Access-Control-Allow-Methods",
+        "GET, PUT, POST, DELETE, OPTIONS"
+      );
+      res.header(
+        "Access-Control-Allow-Headers",
+        "Content-type,Accept,X-Access-Token,X-Key"
+      );
+      if (req.method == "OPTIONS") {
+        res.status(200).end();
+      } else {
+        next();
+      }
+    });
   }
 
   private initializeErrorHandling() {
