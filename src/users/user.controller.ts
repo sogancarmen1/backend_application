@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import Controller from "interfaces/controller.interface";
-import authMiddleware from "../middlewares/auth.middleware";
+import { authMiddleware } from "../middlewares/auth.middleware";
 import UserService from "./user.service";
 import PostgresUserRepository from "./postgresUser.repository";
 

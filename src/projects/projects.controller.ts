@@ -10,6 +10,8 @@ import Members from "members/members.interface";
 import AddMemberDto from "members/member.dto";
 import { Result } from "../utils/utils";
 import HttpException from "../exceptions/HttpException";
+import { authMiddleware, decodedToken } from "../middlewares/auth.middleware";
+import RequestWithUser from "interfaces/requestWithUser.interface";
 
 class ProjectsController implements Controller {
   public path = "/projects";
@@ -23,7 +25,7 @@ class ProjectsController implements Controller {
   }
 
   public initializeRoutes() {
-    this.router.get(this.path, this.getAllProjects);
+    this.router.get(this.path, authMiddleware, this.getAllProjects);
     this.router.post(
       this.path,
       validationMiddleware(CreateProjectDto),
@@ -118,24 +120,27 @@ class ProjectsController implements Controller {
 
   private getAllProjects = async (
     request: express.Request,
-    response: express.Response
+    response: express.Response,
+    next: express.NextFunction
   ) => {
     try {
-      const id = request.query.id;
+      const myCookie = request.cookies["Authorization"];
+      const id = decodedToken(myCookie);
       const allProjects = await this.projectService.findAllProjectsForUser(
         Number(id)
       );
       response.status(200).send(new Result(true, "", allProjects));
     } catch (error) {
-      if (error instanceof HttpException) {
-        response
-          .status(error.statut)
-          .send(new Result(false, error.message, null));
-      } else {
-        response
-          .status(500)
-          .send(new Result(false, "Erreur interne du serveur", null));
-      }
+      next(error);
+      // if (error instanceof HttpException) {
+      //   response
+      //     .status(error.statut)
+      //     .send(new Result(false, error.message, null));
+      // } else {
+      //   response
+      //     .status(500)
+      //     .send(new Result(false, "Erreur interne du serveur", null));
+      // }
     }
   };
 
