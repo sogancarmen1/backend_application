@@ -4,6 +4,7 @@ export class CreateProjectDto {
   @IsString()
   public name: string;
   @IsString()
+  @IsOptional()
   public userId: Number;
   @IsOptional()
   public description: string;

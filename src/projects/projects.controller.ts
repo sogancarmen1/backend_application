@@ -28,6 +28,7 @@ class ProjectsController implements Controller {
     this.router.get(this.path, authMiddleware, this.getAllProjects);
     this.router.post(
       this.path,
+      authMiddleware,
       validationMiddleware(CreateProjectDto),
       this.createProject
     );
@@ -149,7 +150,10 @@ class ProjectsController implements Controller {
     response: express.Response
   ) => {
     try {
+      const myCookie = request.cookies["Authorization"];
+      const id = decodedToken(myCookie);
       const project: CreateProjectDto = request.body;
+      project.userId = Number(id);
       const newProject = await this.projectService.createProject(project);
       response.status(201).send(new Result(true, "", newProject));
     } catch (error) {
