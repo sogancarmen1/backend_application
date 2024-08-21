@@ -3,10 +3,13 @@ import { IsEmail, IsNumber, IsOptional, IsString } from "class-validator";
 export class CreateTaskDto {
   @IsString()
   public name: string;
+  @IsOptional()
   @IsString()
   public dueDate: string;
+  @IsOptional()
   @IsString()
   public priority: string;
+  @IsOptional()
   @IsString()
   public status: string;
   @IsNumber()
@@ -22,10 +25,13 @@ export class CreateTaskDto {
 export class updateTaskDto {
   @IsString()
   public name: string;
+  @IsOptional()
   @IsString()
   public dueDate: string;
+  @IsOptional()
   @IsString()
   public priority: string;
+  @IsOptional()
   @IsString()
   public status: string;
   @IsOptional()
