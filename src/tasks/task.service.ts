@@ -50,7 +50,7 @@ class TaskService {
   public async findAllTasksByProject(idProject: Number) {
     await this.projectService.findProjectById(idProject);
     const allTasks = await this.repository.getAllTasksByProject(idProject);
-    if (allTasks.length == 0) throw new TasksNotFoundInProject(idProject);
+    // if (allTasks.length == 0) throw new TasksNotFoundInProject(idProject);
     return allTasks;
   }
 

@@ -167,7 +167,7 @@ class TasksController implements Controller {
     try {
       const id = request.query.id;
       const allTasks = await this.taskService.findAllTasksByProject(Number(id));
-      response.status(201).send(new Result(true, "", allTasks));
+      response.status(200).send(new Result(true, "", allTasks));
     } catch (error) {
       if (error instanceof HttpException) {
         response
