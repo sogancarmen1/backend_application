@@ -31,6 +31,7 @@ export class CreateTaskDto {
 
 export class updateTaskDto {
   @IsString()
+  @IsNotEmpty()
   public name: string;
   @IsOptional()
   @IsString()

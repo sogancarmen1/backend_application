@@ -93,7 +93,10 @@ class TaskService {
       taskUpdated.name,
       task.projectId
     );
-    const taskUpdate = this.repository.updateTask(idTask, taskUpdated);
+    const taskUpdate = this.repository.updateTask(idTask, {
+      ...task,
+      ...taskUpdated,
+    });
     return taskUpdate;
   }
 }

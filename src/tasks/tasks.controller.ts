@@ -79,15 +79,22 @@ class TasksController implements Controller {
 
   private getTaskById = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const id = request.params.id;
       const task = await this.taskService.findTaskById(Number(id));
-      response.send(task);
+      response.status(200).send(new Result(true, "", task));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 

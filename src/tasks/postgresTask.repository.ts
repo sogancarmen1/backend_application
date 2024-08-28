@@ -114,7 +114,7 @@ class PostgresTaskRepository implements ITaskRepository {
   async updateTask(taskId: Number, task: updateTaskDto): Promise<Task> {
     try {
       const result = await this.pool.query(
-        "UPDATE tasks SET name = $1, priority = $2, status = $3, due_date = $4, description = $5 WHERE id = $5 RETURNING * ",
+        "UPDATE tasks SET name = $1, priority = $2, status = $3, due_date = $4, description = $5 WHERE id = $6 RETURNING * ",
         [
           task.name,
           task.priority,
