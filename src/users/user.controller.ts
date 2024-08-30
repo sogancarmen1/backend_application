@@ -31,8 +31,7 @@ class UserController implements Controller {
       const id = decodedToken(myCookie);
       const user = await this.userService.findUserById(Number(id));
       response.status(200).send({
-        firstName: user.firstName,
-        lastName: user.lastName,
+        email: user.email,
       });
     } catch (error) {
       next(error);
