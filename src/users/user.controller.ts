@@ -19,7 +19,7 @@ class UserController implements Controller {
     // this.router.get(this.path, this.getAllUsers);
     // this.router.get(`${this.path}/:id`, this.getUserById);
     this.router.get(
-      this.path,
+      `${this.path}/email-contains`,
       authMiddleware,
       this.getAllUsersWithEmailContainCaractere
     );
