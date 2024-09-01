@@ -29,6 +29,22 @@ class PostgresUserRepository implements IUserRepository {
     return userFound;
   }
 
+  async getAllUserWithEmailContainCharactere(
+    userText: string
+  ): Promise<User[] | []> {
+    try {
+      const result = await this.pool.query(
+        `SELECT * FROM users WHERE email LIKE '${userText}%'`
+      );
+      const usersFound: any[] = result.rows.map((row) => {
+        return {
+          email: row.email,
+        };
+      });
+      return usersFound;
+    } catch (error) {}
+  }
+
   //firstName est un attribut de l'interface User
   //firstname est le nom d'une colonne de la table users dans la BD
   async getAllUser(): Promise<User[]> {

@@ -10,6 +10,13 @@ class UserService {
     this.repository = repository;
   }
 
+  public async findAllUsersWithEmailContainCharactere(userText: string) {
+    const users = await this.repository.getAllUserWithEmailContainCharactere(
+      userText
+    );
+    return users;
+  }
+
   public async findUserById(idUser: Number) {
     const user = await this.repository.getUserById(idUser);
     if (user == null) throw new UserNotFoundByIdException(idUser);
