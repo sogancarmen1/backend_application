@@ -3,6 +3,8 @@ import Controller from "interfaces/controller.interface";
 import UserService from "./user.service";
 import PostgresUserRepository from "./postgresUser.repository";
 import { authMiddleware, decodedToken } from "../middlewares/auth.middleware";
+import { Result } from "../utils/utils";
+import HttpException from "../exceptions/HttpException";
 
 class UserController implements Controller {
   public path = "/users";
@@ -28,8 +30,7 @@ class UserController implements Controller {
 
   private getAllUsersWithEmailContainCaractere = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const search = request.query.search;
@@ -37,9 +38,17 @@ class UserController implements Controller {
         await this.userService.findAllUsersWithEmailContainCharactere(
           String(search)
         );
-      response.send(users);
+      response.status(200).send(new Result(true, "", users));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 

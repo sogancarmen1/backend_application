@@ -38,7 +38,9 @@ class PostgresUserRepository implements IUserRepository {
       );
       const usersFound: any[] = result.rows.map((row) => {
         return {
+          id: row.id,
           email: row.email,
+          role: row.role,
         };
       });
       return usersFound;
