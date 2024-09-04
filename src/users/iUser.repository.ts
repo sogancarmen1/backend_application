@@ -1,5 +1,6 @@
 import User from "users/user.interface";
 import { CreateUserDto } from "./user.dto";
+import { AddMemberDto } from "members/member.dto";
 
 interface IUserRepository {
   getAllUser(): Promise<User[]>;

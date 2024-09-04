@@ -39,6 +39,7 @@ class UserService {
     if (user == null) throw new UserNotFoundByEmailException(emailUser);
     return user;
   }
+
   public async createdUser(user: CreateUserDto, passwordHashed: string) {
     await this.repository.createUser(user, passwordHashed);
   }

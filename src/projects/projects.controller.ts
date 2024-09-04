@@ -7,18 +7,20 @@ import ProjectService from "./project.service";
 import PostgresUserRepository from "../users/postgresUser.repository";
 import UserService from "../users/user.service";
 import Members from "members/members.interface";
-import AddMemberDto from "members/member.dto";
+import { AddMemberDto } from "members/member.dto";
 import { Result } from "../utils/utils";
 import HttpException from "../exceptions/HttpException";
 import { authMiddleware, decodedToken } from "../middlewares/auth.middleware";
 import RequestWithUser from "interfaces/requestWithUser.interface";
+import EmailService from "../mail/email.service";
 
 class ProjectsController implements Controller {
   public path = "/projects";
   public router = express.Router();
   private projectService = new ProjectService(
     new PostgresProjectRepository(),
-    new UserService(new PostgresUserRepository())
+    new UserService(new PostgresUserRepository()),
+    new EmailService()
   );
   constructor() {
     this.initializeRoutes();

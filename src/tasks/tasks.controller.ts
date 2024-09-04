@@ -10,6 +10,7 @@ import UserService from "../users/user.service";
 import PostgresUserRepository from "../users/postgresUser.repository";
 import { Result } from "../utils/utils";
 import HttpException from "../exceptions/HttpException";
+import EmailService from "../mail/email.service";
 
 class TasksController implements Controller {
   public path = "/tasks";
@@ -18,7 +19,8 @@ class TasksController implements Controller {
     new PostgresTaskRepository(),
     new ProjectService(
       new PostgresProjectRepository(),
-      new UserService(new PostgresUserRepository())
+      new UserService(new PostgresUserRepository()),
+      new EmailService()
     ),
     new UserService(new PostgresUserRepository())
   );

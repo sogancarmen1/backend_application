@@ -3,7 +3,7 @@ import IProjectRepository from "./projectRepository.interface";
 import Project from "./projects.interface";
 import { CreateProjectDto, UpdateProjectDto } from "./projects.dto";
 import Members from "members/members.interface";
-import AddMemberDto from "members/member.dto";
+import { AddMemberDto, MemberConfig } from "members/member.dto";
 
 class PostgresProjectRepository implements IProjectRepository {
   public pool: Pool;
@@ -37,7 +37,7 @@ class PostgresProjectRepository implements IProjectRepository {
   }
 
   private convertAddMemberDtoToString(
-    addMemberDto: AddMemberDto[],
+    addMemberDto: MemberConfig[],
     idProject: Number
   ) {
     return addMemberDto
@@ -70,7 +70,7 @@ class PostgresProjectRepository implements IProjectRepository {
     } catch (error) {}
   }
 
-  async addMembers(members: AddMemberDto[], idProject: Number): Promise<any[]> {
+  async addMembers(members: MemberConfig[], idProject: Number): Promise<any[]> {
     try {
       const addMemberDtoToString = this.convertAddMemberDtoToString(
         members,

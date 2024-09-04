@@ -1,4 +1,4 @@
-import AddMemberDto from "members/member.dto";
+import { MemberConfig } from "members/member.dto";
 import Members from "members/members.interface";
 import { CreateProjectDto, UpdateProjectDto } from "projects/projects.dto";
 import Project from "projects/projects.interface";
@@ -14,7 +14,7 @@ interface IProjectRepository {
   updateProject(idProject: Number, project: UpdateProjectDto): Promise<Project>;
   deleteProject(idProject: Number): Promise<void>;
   createProject(project: CreateProjectDto): Promise<any>;
-  addMembers(members: AddMemberDto[], idProject: Number): Promise<any[]>;
+  addMembers(members: MemberConfig[], idProject: Number): Promise<any[]>;
   getAllMembers(idProject: Number): Promise<Members[] | []>;
   getMemberById(idProject: Number, idUser: Number): Promise<Members>;
   removeMembers(membersId: string[], idProject: Number): Promise<void>;

@@ -1,20 +1,26 @@
 import ProjectNotFoundException from "../exceptions/ProjectNotFoundException";
 import IProjectRepository from "./projectRepository.interface";
-import ProjectNotFoundUser from "../exceptions/ProjectNotFoundFroUser";
 import { CreateProjectDto, UpdateProjectDto } from "./projects.dto";
 import UserService from "../users/user.service";
 import ProjectAlreadyExistException from "../exceptions/ProjectAlreadyExistException";
-import AddMemberDto from "members/member.dto";
+import { AddMemberDto, MemberConfig } from "members/member.dto";
 import Members from "members/members.interface";
 import UserIsAlreadyInProjectException from "../exceptions/UserIsAlreadyInProjectException";
 import UserNotFoundInProjectException from "../exceptions/UserNotFoundInProjectException";
+import EmailService from "mail/email.service";
 
 class ProjectService {
   repository: IProjectRepository;
   userService: UserService;
-  constructor(repository: IProjectRepository, userService: UserService) {
+  emailService: EmailService;
+  constructor(
+    repository: IProjectRepository,
+    userService: UserService,
+    emailService: EmailService
+  ) {
     this.repository = repository;
     this.userService = userService;
+    this.emailService = emailService;
   }
 
   public async findAllProjectsForUser(idUser: Number) {
@@ -48,19 +54,34 @@ class ProjectService {
   }
 
   public async addMembers(members: AddMemberDto[], idProject: Number) {
+    const memberConfig: MemberConfig[] = [];
     for (const member of members) {
-      await this.userService.findUserById(member.idUser);
+      const user = await this.userService.findUserByEmail(member.userEmail);
+      memberConfig.push({
+        idUser: user.id,
+        roleType: "user",
+      });
       await this.findProjectById(idProject);
-      const result = await this.repository.getMemberById(
-        idProject,
-        member.idUser
-      );
+      const result = await this.repository.getMemberById(idProject, user.id);
       if (result) {
-        throw new UserIsAlreadyInProjectException(member.idUser, idProject);
+        throw new UserIsAlreadyInProjectException(user.id, idProject);
       }
     }
-    const addedMember = await this.repository.addMembers(members, idProject);
-    return addedMember;
+    if (memberConfig.length == members.length) {
+      const addedMember = await this.repository.addMembers(
+        memberConfig,
+        idProject
+      );
+      const member: string[] = members.map((member) => member.userEmail);
+      await this.emailService.sendMail(
+        member,
+        "Bienvenue sur la plateforme ProAt!",
+        `Vous avez été ajouté(e) à un projet. \nConnectez-vous pour consulter ce dernier : http://localhost:5173/`,
+        `Vous avez été ajouté(e) à un projet. \nConnectez-vous pour consulter ce dernier : http://localhost:5173/`
+      );
+      return addedMember;
+    }
+    return [];
   }
 
   public async findMemberById(idProject: Number, idUser: Number) {
