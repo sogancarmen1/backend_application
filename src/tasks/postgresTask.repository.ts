@@ -1,7 +1,11 @@
 import { Pool } from "pg";
 import ITaskRepository from "./taskRepository.interface";
 import Task from "./tasks.interface";
-import { assignToDto, CreateTaskDto, updateTaskDto } from "./tasks.dto";
+import {
+  assignToDto,
+  CreateTaskDto,
+  updateTaskDto,
+} from "./tasks.dto";
 
 class PostgresTaskRepository implements ITaskRepository {
   public pool: Pool;
@@ -58,12 +62,13 @@ class PostgresTaskRepository implements ITaskRepository {
 
   async assignTo(
     idTask: Number,
-    user: assignToDto
+    user: assignToDto,
+    userId: Number
   ): Promise<Task | null> {
     try {
       const result = await this.pool.query(
         "UPDATE tasks SET assigned_to = $1 WHERE id_projects = $2 AND id = $3 RETURNING * ",
-        [user.id, user.idProject, idTask]
+        [userId, user.idProject, idTask]
       );
       const value: Task = this.convertRowToTask(result.rows[0]);
       return value;

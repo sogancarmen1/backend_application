@@ -7,6 +7,7 @@ import { assignToDto, CreateTaskDto, updateTaskDto } from "./tasks.dto";
 import UserService from "users/user.service";
 import TaskNotFoundByIdInProject from "../exceptions/TaskNotFoundInProject";
 import TaskIsNotAssigned from "../exceptions/TaskIsNotAssigned";
+import User from "users/user.interface";
 
 class TaskService {
   repository: ITaskRepository;
@@ -28,13 +29,15 @@ class TaskService {
     return task;
   }
 
-  public async assignTo(idTask: Number, user: assignToDto) {
-    await this.userService.findUserById(user.id);
+  public async assignTo(idTask: Number, user: assignToDto, userId: Number) {
+    const userFound: User = await this.userService.findUserByEmail(
+      user.userEmail
+    );
     await this.projectService.findProjectById(user.idProject);
     await this.findTaskById(idTask);
     await this.findTaskByIdInProject(idTask, user.idProject);
-    await this.projectService.findMemberById(user.idProject, user.id);
-    const value = await this.repository.assignTo(idTask, user);
+    await this.projectService.findMemberById(user.idProject, userFound.id);
+    const value = await this.repository.assignTo(idTask, user, userId);
     return value;
   }
 

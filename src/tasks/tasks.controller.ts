@@ -11,6 +11,7 @@ import PostgresUserRepository from "../users/postgresUser.repository";
 import { Result } from "../utils/utils";
 import HttpException from "../exceptions/HttpException";
 import EmailService from "../mail/email.service";
+import { authMiddleware, decodedToken } from "../middlewares/auth.middleware";
 
 class TasksController implements Controller {
   public path = "/tasks";
@@ -43,7 +44,11 @@ class TasksController implements Controller {
     this.router.delete(`${this.path}/:id`, this.deleteTaskInProject);
     this.router.get(this.path, this.getAllTasksByProject);
     this.router.get(`${this.path}/:id`, this.getTaskById);
-    this.router.put(`${this.path}/:id/responsible`, this.assignedTo);
+    this.router.put(
+      `${this.path}/:id/responsible`,
+      authMiddleware,
+      this.assignedTo
+    );
     this.router.put(`${this.path}/:id/responsible`, this.unassigned);
   }
 
@@ -64,18 +69,25 @@ class TasksController implements Controller {
 
   private assignedTo = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const id = request.params.id;
       const user: assignToDto = request.body;
-      await this.taskService.assignTo(Number(id), user);
-      response.send(
-        `User with id ${user.id} has assigned to task with id ${id}`
-      );
+      const myCookie = request.cookies["Authorization"];
+      const idUser = decodedToken(myCookie);
+      await this.taskService.assignTo(Number(id), user, Number(idUser));
+      response.status(200).send(new Result(true, "", null));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 

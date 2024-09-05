@@ -49,7 +49,8 @@ export class updateTaskDto {
 
 export class assignToDto {
   @IsString()
-  public id: Number;
+  @IsEmail()
+  public userEmail: string;
   @IsString()
   public idProject: Number;
 }
