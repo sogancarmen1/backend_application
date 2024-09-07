@@ -8,19 +8,23 @@ import UserService from "users/user.service";
 import TaskNotFoundByIdInProject from "../exceptions/TaskNotFoundInProject";
 import TaskIsNotAssigned from "../exceptions/TaskIsNotAssigned";
 import User from "users/user.interface";
+import EmailService from "mail/email.service";
 
 class TaskService {
   repository: ITaskRepository;
   projectService: ProjectService;
   userService: UserService;
+  emailService: EmailService;
   constructor(
     repository: ITaskRepository,
     projectService: ProjectService,
-    userService: UserService
+    userService: UserService,
+    emailService: EmailService
   ) {
     this.repository = repository;
     this.projectService = projectService;
     this.userService = userService;
+    this.emailService = emailService;
   }
 
   public async findTaskByIdInProject(idTask: Number, idProject: Number) {
@@ -34,10 +38,16 @@ class TaskService {
       user.userEmail
     );
     await this.projectService.findProjectById(user.idProject);
-    await this.findTaskById(idTask);
+    const task = await this.findTaskById(idTask);
     await this.findTaskByIdInProject(idTask, user.idProject);
     await this.projectService.findMemberById(user.idProject, userFound.id);
     const value = await this.repository.assignTo(idTask, user, userId);
+    await this.emailService.sendMail(
+      [user.userEmail],
+      "Bienvenue sur la plateforme ProAt!",
+      `La tâche "${task.name}" vous a été assignée. \nConnectez-vous pour consulter cette derniere : http://localhost:5173/`,
+      `La tâche "${task.name}" vous a été assignée. \nConnectez-vous pour consulter cette derniere : http://localhost:5173/`
+    );
     return value;
   }
 

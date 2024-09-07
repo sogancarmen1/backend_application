@@ -23,7 +23,8 @@ class TasksController implements Controller {
       new UserService(new PostgresUserRepository()),
       new EmailService()
     ),
-    new UserService(new PostgresUserRepository())
+    new UserService(new PostgresUserRepository()),
+    new EmailService()
   );
 
   constructor() {
