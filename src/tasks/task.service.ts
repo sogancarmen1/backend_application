@@ -33,7 +33,7 @@ class TaskService {
     return task;
   }
 
-  public async assignTo(idTask: Number, user: assignToDto, userId: Number) {
+  public async assignTo(idTask: Number, user: assignToDto) {
     const userFound: User = await this.userService.findUserByEmail(
       user.userEmail
     );
@@ -41,7 +41,7 @@ class TaskService {
     const task = await this.findTaskById(idTask);
     await this.findTaskByIdInProject(idTask, user.idProject);
     await this.projectService.findMemberById(user.idProject, userFound.id);
-    const value = await this.repository.assignTo(idTask, user, userId);
+    const value = await this.repository.assignTo(idTask, user, userFound.id);
     await this.emailService.sendMail(
       [user.userEmail],
       "Bienvenue sur la plateforme ProAt!",

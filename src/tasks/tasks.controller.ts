@@ -12,6 +12,7 @@ import { Result } from "../utils/utils";
 import HttpException from "../exceptions/HttpException";
 import EmailService from "../mail/email.service";
 import { authMiddleware, decodedToken } from "../middlewares/auth.middleware";
+import User from "users/user.interface";
 
 class TasksController implements Controller {
   public path = "/tasks";
@@ -74,10 +75,8 @@ class TasksController implements Controller {
   ) => {
     try {
       const id = request.params.id;
-      const user: assignToDto = request.body;
-      const myCookie = request.cookies["Authorization"];
-      const idUser = decodedToken(myCookie);
-      await this.taskService.assignTo(Number(id), user, Number(idUser));
+      const userDto: assignToDto = request.body;
+      const task = await this.taskService.assignTo(Number(id), userDto);
       response.status(200).send(new Result(true, "", null));
     } catch (error) {
       if (error instanceof HttpException) {

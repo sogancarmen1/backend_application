@@ -19,13 +19,17 @@ class UserController implements Controller {
     //Gerer les autorisations
     // this.router.get(this.path, authMiddleware, this.getAllUsers);
     // this.router.get(this.path, this.getAllUsers);
-    // this.router.get(`${this.path}/:id`, this.getUserById);
+    this.router.get(`${this.path}/:id`, this.getUserById);
     this.router.get(
       `${this.path}/email-contains`,
       authMiddleware,
       this.getAllUsersWithEmailContainCaractere
     );
-    this.router.get(this.path, authMiddleware, this.getUserById);
+    this.router.get(
+      this.path,
+      authMiddleware,
+      this.getUserByIdForUserConnected
+    );
   }
 
   private getAllUsersWithEmailContainCaractere = async (
@@ -53,6 +57,22 @@ class UserController implements Controller {
   };
 
   private getUserById = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const id = request.params.id;
+      const user = await this.userService.findUserById(Number(id));
+      response.status(200).send({
+        email: user.email,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  private getUserByIdForUserConnected = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
