@@ -41,7 +41,7 @@ class TaskService {
     const task = await this.findTaskById(idTask);
     await this.findTaskByIdInProject(idTask, user.idProject);
     await this.projectService.findMemberById(user.idProject, userFound.id);
-    const value = await this.repository.assignTo(idTask, user, userFound.id);
+    const value = await this.repository.assignTo(idTask, user, userFound.email);
     await this.emailService.sendMail(
       [user.userEmail],
       "Bienvenue sur la plateforme ProAt!",

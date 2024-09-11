@@ -19,14 +19,14 @@ class UserController implements Controller {
     //Gerer les autorisations
     // this.router.get(this.path, authMiddleware, this.getAllUsers);
     // this.router.get(this.path, this.getAllUsers);
-    this.router.get(`${this.path}/:id`, this.getUserById);
+    this.router.get(this.path, this.getUserById);
     this.router.get(
       `${this.path}/email-contains`,
       authMiddleware,
       this.getAllUsersWithEmailContainCaractere
     );
     this.router.get(
-      this.path,
+      `${this.path}/:id`,
       authMiddleware,
       this.getUserByIdForUserConnected
     );
@@ -62,7 +62,8 @@ class UserController implements Controller {
     next: express.NextFunction
   ) => {
     try {
-      const id = request.params.id;
+      const myCookie = request.cookies["Authorization"];
+      const id = decodedToken(myCookie);
       const user = await this.userService.findUserById(Number(id));
       response.status(200).send({
         email: user.email,
@@ -74,18 +75,26 @@ class UserController implements Controller {
 
   private getUserByIdForUserConnected = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
-      const myCookie = request.cookies["Authorization"];
-      const id = decodedToken(myCookie);
+      const id = request.params.id;
       const user = await this.userService.findUserById(Number(id));
-      response.status(200).send({
-        email: user.email,
-      });
+      response.status(200).send(
+        new Result(true, "", {
+          email: user.email,
+        })
+      );
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 

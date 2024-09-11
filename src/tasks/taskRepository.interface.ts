@@ -11,7 +11,7 @@ interface ITaskRepository {
   assignTo(
     idTask: Number,
     user: assignToDto,
-    userId: Number
+    userEmail: string
   ): Promise<Task | null>;
   isAssignedTo(idTask: Number, idProject: Number): Promise<boolean>;
   getTaskByIdInProject(idTask: Number, idProject: Number): Promise<Task | null>;
