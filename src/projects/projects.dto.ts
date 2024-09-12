@@ -13,7 +13,9 @@ export class CreateProjectDto {
 
 export class UpdateProjectDto {
   @IsString()
+  @IsNotEmpty()
   public name: string;
   @IsOptional()
+  @IsString()
   public description: string;
 }

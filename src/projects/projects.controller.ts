@@ -226,17 +226,24 @@ class ProjectsController implements Controller {
 
   private getProjectById = async (
     request: express.Request,
-    response: express.Response,
-    next: express.NextFunction
+    response: express.Response
   ) => {
     try {
       const id = request.params.id;
       const projectFound = await this.projectService.findProjectById(
         Number(id)
       );
-      response.send(projectFound);
+      response.status(200).send(new Result(true, "", projectFound));
     } catch (error) {
-      next(error);
+      if (error instanceof HttpException) {
+        response
+          .status(error.statut)
+          .send(new Result(false, error.message, null));
+      } else {
+        response
+          .status(500)
+          .send(new Result(false, "Erreur interne du serveur", null));
+      }
     }
   };
 }

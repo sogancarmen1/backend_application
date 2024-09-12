@@ -120,7 +120,7 @@ class ProjectService {
     idProject: Number,
     projectUpdated: UpdateProjectDto
   ) {
-    await this.findProjectById(idProject);
+    const project = await this.findProjectById(idProject);
     const allMembers: Members[] = await this.findAllMembers(idProject);
     const member = allMembers.find((member) => {
       return member.roleType === "owner";
@@ -129,10 +129,10 @@ class ProjectService {
       projectUpdated.name,
       member.id
     );
-    const projectUpdate = await this.repository.updateProject(
-      idProject,
-      projectUpdated
-    );
+    const projectUpdate = await this.repository.updateProject(idProject, {
+      ...project,
+      ...projectUpdated,
+    });
     return projectUpdate;
   }
 }
