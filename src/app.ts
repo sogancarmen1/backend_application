@@ -5,6 +5,7 @@ import Controller from "interfaces/controller.interface";
 import errorMiddleware from "./middlewares/erreur.middleware";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { swaggerUi, swaggerDocs } from "./swagger";
 
 class App {
   public app: express.Application;
@@ -23,6 +24,7 @@ class App {
   private initializeMiddlewares() {
     this.app.use(bodyParser.json());
     this.app.use(cookieParser());
+    this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
     this.app.use(
       cors({
         origin: "http://localhost:5173",

@@ -27,6 +27,15 @@ class ProjectsController implements Controller {
   }
 
   public initializeRoutes() {
+    /**
+     * @swagger
+     * /api/hello:
+     *   get:
+     *     summary: Renvoie un message de bienvenue
+     *     responses:
+     *       200:
+     *         description: Un message de bienvenue
+     */
     this.router.get(this.path, authMiddleware, this.getAllProjects);
     this.router.post(
       this.path,
