@@ -50,20 +50,29 @@ class ProjectsController implements Controller {
      * components:
      *   schemas:
      *     Projects:
-     *       type: array
-     *       items:
-     *         type: object
-     *         properties:
-     *           id:
-     *             type: integer
-     *             format: int64
-     *             example: 2
-     *           name:
-     *             type: string
-     *             example: MyProject
-     *           description:
-     *             type: string
-     *             example: Description of MyProject
+     *       type: object
+     *       properties:
+     *         sucess:
+     *               type: boolean
+     *               example: true
+     *         message:
+     *               type: string
+     *               example: "the message"
+     *         data:
+     *             type: array
+     *             items:
+     *               type: object
+     *               properties:
+     *                 id:
+     *                   type: integer
+     *                   format: int64
+     *                   example: 2
+     *                 name:
+     *                   type: string
+     *                   example: MyProject
+     *                 description:
+     *                   type: string
+     *                   example: Description of MyProject
      */
     this.router.get(this.path, authMiddleware, this.getAllProjects);
 
@@ -96,16 +105,27 @@ class ProjectsController implements Controller {
      *     Project:
      *       type: object
      *       properties:
-     *         id:
-     *           type: integer
-     *           format: int64
-     *           example: 4
-     *         name:
+     *         sucess:
+     *           type: boolean
+     *           example: false
+     *         message:
      *           type: string
-     *           example: write a document
-     *         description:
-     *           type: string
-     *           example: write a documentation of document
+     *           example: the message
+     *         data:
+     *           type: array
+     *           items:
+     *             type: object
+     *             properties:
+     *               id:
+     *                 type: integer
+     *                 format: int64
+     *                 example: 8
+     *               name:
+     *                 type: string
+     *                 example: "project45"
+     *               description:
+     *                 type: string
+     *                 example: write a documentation of document
      *     CreateProject:
      *       type: object
      *       properties:
@@ -338,6 +358,36 @@ class ProjectsController implements Controller {
      */
     this.router.get(`${this.path}/:id/member`, this.getMemberById);
 
+    /**
+     * @swagger
+     * /projects/{id}/members:
+     *   delete:
+     *     tags:
+     *       - Projects
+     *     summary: Remove member of projects
+     *     operationId: "removeMembers"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         description: Project ID
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *       - name: usersId
+     *         in: query
+     *         description: Users ID
+     *         required: true
+     *         schema:
+     *           type: string
+     *     responses:
+     *       '200':
+     *         description: successful operation
+     *       '400':
+     *         description: Invalid ID supplied
+     *       '404':
+     *         description: Project not found
+     */
     this.router.delete(`${this.path}/:id/members`, this.removeMembers);
 
     /**
@@ -346,7 +396,7 @@ class ProjectsController implements Controller {
      *   get:
      *     tags:
      *       - Projects
-     *     summary: Get all members of a project  # Correction du résumé
+     *     summary: Get all members of a project
      *     operationId: "getAllMembers"
      *     parameters:
      *       - name: id

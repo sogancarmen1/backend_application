@@ -19,12 +19,130 @@ class UserController implements Controller {
     //Gerer les autorisations
     // this.router.get(this.path, authMiddleware, this.getAllUsers);
     // this.router.get(this.path, this.getAllUsers);
+
+    /**
+     * @swagger
+     * tags:
+     *   - name: Users
+     *     description: Operations about users
+     */
+
+    /**
+     * @swagger
+     * /users:
+     *   get:
+     *     tags:
+     *       - Users
+     *     summary: Get id of users connected
+     *     operationId: "getUserById"
+     *     responses:
+     *       '200':
+     *         description: user id
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/User'
+     *       '401':
+     *         description: Authorization information is missing or invalid.
+     *       '404':
+     *         description: Project not found.
+     * components:
+     *   schemas:
+     *     User:
+     *       type: object
+     *       properties:
+     *         email:
+     *           type: string
+     *           example: "myemail@gmail.com"
+     *     Users:
+     *       type: object
+     *       properties:
+     *         sucess:
+     *               type: boolean
+     *               example: true
+     *         message:
+     *               type: string
+     *               example: ""
+     *         data:
+     *           type: array
+     *           items:
+     *             type: object
+     *             properties:
+     *               id:
+     *                 type: integer
+     *                 format: int64
+     *                 example: 4
+     *               email:
+     *                   type: string
+     *                   example: sogancarmen1@gmail.com
+     *               role:
+     *                   type: string
+     *                   example: owner
+     */
     this.router.get(this.path, this.getUserById);
+
+    /**
+     * @swagger
+     * /users/email-contains:
+     *   get:
+     *     tags:
+     *       - Users
+     *     summary: Get all email begin with fours character in query request
+     *     operationId: "getAllUsersWithEmailContainCaractere"
+     *     parameters:
+     *       - name: search
+     *         in: query
+     *         description: Email contains
+     *         required: true
+     *         schema:
+     *           type: string
+     *           example: sogan
+     *     responses:
+     *       '201':
+     *         description: task created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Users'
+     *       '401':
+     *         description: Authorization information is missing or invalid.
+     *       '404':
+     *         description: Project not found.
+     */
     this.router.get(
       `${this.path}/email-contains`,
       authMiddleware,
       this.getAllUsersWithEmailContainCaractere
     );
+
+    /**
+     * @swagger
+     * /users/{id}:
+     *   get:
+     *     tags:
+     *       - Users
+     *     summary: Get user email by user id
+     *     operationId: "getUserByIdForUserConnected"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         description: User id
+     *         required: true
+     *         schema:
+     *           type: string
+     *           example: sogan@gmail.com
+     *     responses:
+     *       '201':
+     *         description: task created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/User'
+     *       '401':
+     *         description: Authorization information is missing or invalid.
+     *       '404':
+     *         description: Project not found.
+     */
     this.router.get(
       `${this.path}/:id`,
       authMiddleware,

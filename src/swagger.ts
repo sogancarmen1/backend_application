@@ -18,7 +18,12 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./src/projects/*.ts", "./src/tasks/*.ts"],
+  apis: [
+    "./src/projects/*.ts",
+    "./src/tasks/*.ts",
+    "./src/authentification/*.ts",
+    "./src/users/*.ts",
+  ],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);

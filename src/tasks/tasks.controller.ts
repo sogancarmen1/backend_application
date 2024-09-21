@@ -69,63 +69,81 @@ class TasksController implements Controller {
      * components:
      *   schemas:
      *     Tasks:
-     *       type: array
-     *       items:
-     *         type: object
-     *         properties:
-     *           id:
-     *             type: integer
-     *             format: int64
-     *             example: 4
-     *           name:
-     *             type: string
-     *             example: sleep
-     *           dueDate:
-     *             type: date
-     *             example: 2024-12-01
-     *           priority:
-     *             type: string
-     *             example: High
-     *           status:
-     *             type: string
-     *             example: Low
-     *           assignedTo:
-     *             type: string
-     *             example: proat@gmail.com
-     *           projectId:
-     *             type: string
-     *             example: 8
-     *           taskDescription:
-     *             type: string
-     *             example: I need to sleep
+     *       type: object
+     *       properties:
+     *         sucess:
+     *               type: boolean
+     *               example: true
+     *         message:
+     *               type: string
+     *               example: ""
+     *         data:
+     *           type: array
+     *           items:
+     *             type: object
+     *             properties:
+     *               id:
+     *                 type: integer
+     *                 format: int64
+     *                 example: 4
+     *               name:
+     *                   type: string
+     *                   example: sleep
+     *               dueDate:
+     *                   type: date
+     *                   example: 2024-12-01
+     *               priority:
+     *                   type: string
+     *                   example: High
+     *               status:
+     *                   type: string
+     *                   example: Low
+     *               assignedTo:
+     *                   type: string
+     *                   example: proat@gmail.com
+     *               projectId:
+     *                   type: string
+     *                   example: 8
+     *               taskDescription:
+     *                   type: string
+     *                   sexample: I need to sleep
      *     Task:
      *       type: object
      *       properties:
-     *         id:
-     *           type: integer
-     *           format: int64
-     *           example: 4
-     *         name:
+     *         sucess:
+     *           type: boolean
+     *           example: false
+     *         message:
      *           type: string
-     *           example: sleep
-     *         dueDate:
-     *           type: date
-     *           example: 2024-12-01
-     *         priority:
-     *           type: string
-     *           example: High
-     *         status:
-     *           type: string
-     *           example: Low
-     *         assignedTo:
-     *           type: string
-     *           example: proat@gmail.com
-     *         projectId:
-     *           type: string
-     *           example: 8
-     *         taskDescription:
-     *           type: string
-     *           example: I need to sleep
+     *           example: ""
+     *         data:
+     *           type: object
+     *           properties:
+     *             id:
+     *               type: integer
+     *               format: int64
+     *               example: 4
+     *             name:
+     *               type: string
+     *               example: sleep
+     *             dueDate:
+     *               type: date
+     *               example: 2024-12-01
+     *             priority:
+     *               type: string
+     *               example: High
+     *             status:
+     *               type: string
+     *               example: Low
+     *             assignedTo:
+     *               type: string
+     *               example: proat@gmail.com
+     *             projectId:
+     *               type: string
+     *               example: 8
+     *             taskDescription:
+     *               type: string
+     *               example: I need to sleep
      *     CreateTask:
      *       type: object
      *       properties:
@@ -351,7 +369,34 @@ class TasksController implements Controller {
       this.assignedTo
     );
 
-    this.router.put(`${this.path}/:id/responsible`, this.unassigned);
+    /**
+     * @swagger
+     * /tasks/{id}/responsible/{id1}:
+     *   put:
+     *     tags:
+     *       - Tasks
+     *     summary: Unassigned the task.
+     *     operationId: "unassigned"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         description: Task ID
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *       - name: id1
+     *         in: path
+     *         description: Project ID
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *     responses:
+     *       '201':
+     *         description: task unassignation successfull
+     */
+    this.router.put(`${this.path}/:id/responsible/:id1`, this.unassigned);
   }
 
   private unassigned = async (
@@ -361,7 +406,7 @@ class TasksController implements Controller {
   ) => {
     try {
       const id = request.params.id;
-      const id1 = request.query.id1;
+      const id1 = request.params.id1;
       await this.taskService.referTo(Number(id1), Number(id));
       response.send(`Task with id ${id} is unassigned`);
     } catch (error) {
