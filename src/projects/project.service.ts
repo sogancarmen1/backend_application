@@ -26,7 +26,6 @@ class ProjectService {
   public async findAllProjectsForUser(idUser: Number) {
     await this.userService.findUserById(idUser);
     const allProjects = await this.repository.getAllProjects(idUser);
-    // if (allProjects.length == 0) throw new ProjectNotFoundUser(idUser);
     return allProjects;
   }
 

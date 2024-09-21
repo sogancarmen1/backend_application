@@ -29,31 +29,345 @@ class ProjectsController implements Controller {
   public initializeRoutes() {
     /**
      * @swagger
-     * /api/hello:
+     * tags:
+     *   - name: Projects
+     *     description: Operations about projects
+     * /projects:
      *   get:
-     *     summary: Renvoie un message de bienvenue
+     *     tags:
+     *       - Projects
+     *     summary: Returns the list of user's projects
+     *     operationId: "getAllProjects"
      *     responses:
-     *       200:
-     *         description: Un message de bienvenue
+     *       '200':
+     *         description: successful operation
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Projects'
+     *       '401':
+     *         description: Authorization information is missing or invalid.
+     * components:
+     *   schemas:
+     *     Projects:
+     *       type: array
+     *       items:
+     *         type: object
+     *         properties:
+     *           id:
+     *             type: integer
+     *             format: int64
+     *             example: 2
+     *           name:
+     *             type: string
+     *             example: MyProject
+     *           description:
+     *             type: string
+     *             example: Description of MyProject
      */
     this.router.get(this.path, authMiddleware, this.getAllProjects);
+
+    /**
+     * @swagger
+     * /projects:
+     *   post:
+     *     tags:
+     *       - Projects
+     *     summary: Create a new project
+     *     operationId: "createProject"
+     *     requestBody:
+     *       description: name is REQUIRED but description is OPTIONNAL.
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/CreateProject'
+     *     responses:
+     *       '201':
+     *         description: project created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Project'
+     *       '401':
+     *         description: Authorization information is missing or invalid.
+     * components:
+     *   schemas:
+     *     Project:
+     *       type: object
+     *       properties:
+     *         id:
+     *           type: integer
+     *           format: int64
+     *           example: 4
+     *         name:
+     *           type: string
+     *           example: write a document
+     *         description:
+     *           type: string
+     *           example: write a documentation of document
+     *     CreateProject:
+     *       type: object
+     *       properties:
+     *         name:
+     *           type: string
+     *           example: "write a document"
+     *         description:
+     *           type: string
+     *           example: "write a documentation of document"
+     */
     this.router.post(
       this.path,
       authMiddleware,
       validationMiddleware(CreateProjectDto),
       this.createProject
     );
-    //Faire des réglages ici
+
+    /**
+     * @swagger
+     * /projects/{id}:
+     *    put:
+     *      tags:
+     *        - Projects
+     *      summary: Updating an existing project
+     *      operationId: "modifyProject"
+     *      parameters:
+     *        - name: id
+     *          in: path
+     *          description: Project ID
+     *          required: true
+     *          schema:
+     *            type: integer
+     *            format: int64
+     *      requestBody:
+     *        description: name is REQUIRED but description is OPTIONNAL.
+     *        required: true
+     *        content:
+     *          application/json:
+     *            schema:
+     *              $ref: '#/components/schemas/CreateProject'
+     *      responses:
+     *        '200':
+     *          description: successfull operation
+     *          content:
+     *            application/json:
+     *              schema:
+     *                $ref: '#/components/schemas/Project'
+     *        '400':
+     *          description: Invalid ID supplied
+     *        '404':
+     *          description: Project not found
+     *        '405':
+     *          description: Validation exception
+     */
     this.router.put(
       `${this.path}/:id`,
       validationMiddleware(UpdateProjectDto, true),
       this.modifyProject
     );
+
+    /**
+     * @swagger
+     * /projects/{id}:
+     *   delete:
+     *     tags:
+     *       - Projects
+     *     summary: Delete a project
+     *     operationId: "deleteProject"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         description: Project ID
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *     responses:
+     *       '204':
+     *         description: OK
+     *       '400':
+     *         description: Invalid ID supplied
+     *       '404':
+     *         description: Project not found
+     */
     this.router.delete(`${this.path}/:id`, this.deleteProject);
+
+    /**
+     * @swagger
+     * /projects/{id}:
+     *   get:
+     *     tags:
+     *       - Projects
+     *     summary: Find project by ID
+     *     operationId: "getProjectById"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         description: Project ID
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *     responses:
+     *       '200':
+     *         description: successful operation
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Project'
+     *       '400':
+     *         description: Invalid ID supplied
+     *       '404':
+     *         description: Project not found
+     */
     this.router.get(`${this.path}/:id`, this.getProjectById);
+
+    /**
+     * @swagger
+     * /projects/{id}/members:
+     *   post:
+     *     tags:
+     *       - Projects
+     *     summary: Add members to project
+     *     operationId: "addMembers"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         description: Project ID
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *     requestBody:
+     *       description: Email of member(s) which added
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AddMembers'
+     *     responses:
+     *       '200':
+     *         description: successful operation
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Members'
+     *       '400':
+     *         description: Invalid ID supplied
+     *       '404':
+     *         description: Project not found
+     *       '405':
+     *         description: Validation exception
+     * components:
+     *   schemas:
+     *     AddMembers:
+     *       type: array
+     *       items:
+     *         type: object
+     *         properties:
+     *           userEmail:
+     *             type: string
+     *             example: user@gmail.com
+     *     Members:
+     *       type: array
+     *       items:
+     *         type: object
+     *         properties:
+     *           id:
+     *             type: integer
+     *             format: int64
+     *             example: 8
+     *           email:
+     *             type: string
+     *             example: useranomyme@gmail.com
+     *           roleType:
+     *             type: string
+     *             enum: [user, owner]
+     *             example: user
+     */
     this.router.post(`${this.path}/:id/members`, this.addMembers);
+
+    /**
+     * @swagger
+     * /projects/{id}/member:
+     *   post:
+     *     tags:
+     *       - Projects
+     *     summary: Find member by ID
+     *     operationId: "getMemberById"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         description: Project ID
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *       - name: idProject
+     *         in: query
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *     responses:
+     *       '200':
+     *         description: successful operation
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Member'
+     *       '400':
+     *         description: Invalid ID supplied
+     *       '404':
+     *         description: Project not found
+     * components:
+     *   schemas:
+     *     Member:
+     *       type: object
+     *       properties:
+     *         id:
+     *           type: integer
+     *           format: int64
+     *           example: 8
+     *         email:
+     *           type: string
+     *           example: useranomyme@gmail.com
+     *         roleType:
+     *           type: string
+     *           enum: [user, owner]
+     *           example: owner
+     */
     this.router.get(`${this.path}/:id/member`, this.getMemberById);
+
     this.router.delete(`${this.path}/:id/members`, this.removeMembers);
+
+    /**
+     * @swagger
+     * /projects/{id}/members:
+     *   get:
+     *     tags:
+     *       - Projects
+     *     summary: Get all members of a project  # Correction du résumé
+     *     operationId: "getAllMembers"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         description: Project ID
+     *         required: true
+     *         schema:
+     *           type: integer
+     *           format: int64
+     *     responses:
+     *       '200':
+     *         description: successful operation
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Members'
+     *       '400':
+     *         description: Invalid ID supplied
+     *       '404':
+     *         description: Project not found
+     */
     this.router.get(`${this.path}/:id/members`, this.getAllMembers);
   }
 

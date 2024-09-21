@@ -7,7 +7,10 @@ const swaggerOptions = {
     info: {
       title: "ProAt API",
       version: "1.0.0",
-      description: "Documentation de ProAt API",
+      description: "Documentation of ProAt API",
+      contact: {
+        email: "sogancarmen1@gmail.com",
+      },
     },
     servers: [
       {
@@ -15,7 +18,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./src/projects/*.ts"],
+  apis: ["./src/projects/*.ts", "./src/tasks/*.ts"],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
