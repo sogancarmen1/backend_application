@@ -4,7 +4,7 @@
     "module": "commonjs",
     "skipLibCheck": true,
     "target": "es2017",
-    "outDir": "./dist",
+    "outDir": "./build",
     "baseUrl": "./src",
     "esModuleInterop": true,
     "moduleResolution": "Node",
