@@ -24,7 +24,7 @@ class App {
   private initializeMiddlewares() {
     this.app.use(bodyParser.json());
     this.app.use(cookieParser());
-    this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+    this.app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
     this.app.use(
       cors({
         origin: "http://localhost:5173",
