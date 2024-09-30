@@ -1,11 +1,11 @@
-version: '3.3'
+version: "3.3"
 services:
   db:
     image: postgres
     environment:
-      POSTGRES_PASSWORD: dbpass
+      POSTGRES_PASSWORD: 3HfWeWhx6i80NvDowviQlGlmP8BPYtks
       POSTGRES_USER: dbuser
-      POSTGRES_DB: demodb
+      POSTGRES_DB: demodb_h03d
     ports:
       - "5432:5432"
     volumes:
@@ -13,11 +13,11 @@ services:
   app:
     image: my-node-app
     environment:
-      DATABASE_HOST: db
+      DATABASE_HOST: dpg-crtb7rbtq21c73dmtr1g-a
       DATABASE_PORT: 5432
       DATABASE_USER: dbuser
-      DATABASE_PASSWORD: dbpass
-      DATABASE_NAME: demodb
+      DATABASE_PASSWORD: 3HfWeWhx6i80NvDowviQlGlmP8BPYtks
+      DATABASE_NAME: demodb_h03d
     depends_on:
       - db
     ports:
