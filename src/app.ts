@@ -6,6 +6,8 @@ import errorMiddleware from "./middlewares/erreur.middleware";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { swaggerUi, swaggerDocs } from "./swagger";
+import dotenv from 'dotenv'
+
 
 class App {
   public app: express.Application;
@@ -13,6 +15,7 @@ class App {
 
   constructor(controllers: Controller[]) {
     this.app = express();
+    dotenv.config
     this.port = Number(process.env.PORT);
 
     this.connectToTheDatabase();
@@ -27,12 +30,12 @@ class App {
     this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
     this.app.use(
       cors({
-        origin: "http://localhost:5173",
+        origin: ["http://localhost:5173", "https://backend-application-v09m.onrender.com/"],
         credentials: true,
       })
     );
     this.app.all("/*", function (req, res, next) {
-      res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+      res.header("Access-Control-Allow-Origin", ["http://localhost:5173", "https://backend-application-v09m.onrender.com/"]);
       res.header(
         "Access-Control-Allow-Methods",
         "GET, PUT, POST, DELETE, OPTIONS"
