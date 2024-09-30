@@ -46,7 +46,7 @@ class AuthentificationService {
   //Cette fonction createCookie sert à générer une chaîne de caractères représentant un cookie HTTP à envoyer au client dans l'en-tête de réponse.
   //HttpOnly : Empêche l’accès au cookie via JavaScript côté client.
   private createCookie(tokenData: TokenData) {
-    return `Authorization=${tokenData.token}; Path=/; HttpOnly; Max-Age=${tokenData.expiresIn}; SameSite=None`;
+    return `Authorization=${tokenData.token}; Path=/; HttpOnly; Max-Age=${tokenData.expiresIn}; SameSite=None; Secure=true`;
   }
 
   //Crée le token avec le code secret, les données à y intégrer et son temps d'expiration
