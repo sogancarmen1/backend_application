@@ -29,7 +29,7 @@ class App {
     this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
     this.app.use(
       cors({
-        origin: "https://backend-application-v09m.onrender.com",
+        origin: "http://localhost:5173",
         credentials: true,
       })
     );
