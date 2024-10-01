@@ -31,7 +31,7 @@ class AuthentificationController implements Controller {
 
     /**
      * @swagger
-     * /auth:
+     * /auth/register:
      *   post:
      *     tags:
      *       - Authentification
