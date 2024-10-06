@@ -29,16 +29,14 @@ class App {
     this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
     this.app.use(
       cors({
-        // origin: "https://front-end-to-do-list-niul.vercel.app",
-        origin: "http://localhost:3000",
+        origin: "https://front-end-to-do-list-niul.vercel.app",
         credentials: true,
       })
     );
     this.app.all("/*", function (req, res, next) {
       res.header(
         "Access-Control-Allow-Origin",
-        "http://localhost:3000"
-        // "https://front-end-to-do-list-niul.vercel.app"
+        "https://front-end-to-do-list-niul.vercel.app"
       );
       res.header(
         "Access-Control-Allow-Methods",
