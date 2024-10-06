@@ -45,8 +45,8 @@ class TaskService {
     await this.emailService.sendMail(
       [user.userEmail],
       "Bienvenue sur la plateforme ProAt!",
-      `La tâche "${task.name}" vous a été assignée. \nConnectez-vous pour consulter cette derniere : http://localhost:5173/`,
-      `La tâche "${task.name}" vous a été assignée. \nConnectez-vous pour consulter cette derniere : http://localhost:5173/`
+      `La tâche "${task.name}" vous a été assignée. \nConnectez-vous pour consulter cette derniere : https://front-end-to-do-list-niul.vercel.app/`,
+      `La tâche "${task.name}" vous a été assignée. \nConnectez-vous pour consulter cette derniere : https://front-end-to-do-list-niul.vercel.app/`
     );
     return value;
   }

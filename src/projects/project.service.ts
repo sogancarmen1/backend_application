@@ -75,8 +75,8 @@ class ProjectService {
       await this.emailService.sendMail(
         member,
         "Bienvenue sur la plateforme ProAt!",
-        `Vous avez été ajouté(e) à un projet. \nConnectez-vous pour consulter ce dernier : http://localhost:5173/`,
-        `Vous avez été ajouté(e) à un projet. \nConnectez-vous pour consulter ce dernier : http://localhost:5173/`
+        `Vous avez été ajouté(e) à un projet. \nConnectez-vous pour consulter ce dernier : https://front-end-to-do-list-niul.vercel.app/`,
+        `Vous avez été ajouté(e) à un projet. \nConnectez-vous pour consulter ce dernier : https://front-end-to-do-list-niul.vercel.app/`
       );
       return addedMember;
     }
