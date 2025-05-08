@@ -1,5 +1,8 @@
 FROM node:22
 
+ENV PNPM_FORCE_BUILD_BCRYPT=1 \
+    CI=true
+
 WORKDIR /usr/src/app
 
 COPY package.json pnpm-lock.yaml ./
