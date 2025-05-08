@@ -7,7 +7,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon ./src/server.ts",
     "build": "tsc",
-    "postinstall": "pnpm rebuild bcrypt"
+    "postinstall": "pnpm rebuild bcrypt",
+    "pnpm": {
+      "allowedBuildScripts": [
+        "bcrypt"
+      ]
+    }
   },
   "author": "",
   "license": "ISC",
