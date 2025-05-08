@@ -15,7 +15,7 @@ class App {
   constructor(controllers: Controller[]) {
     this.app = express();
     dotenv.config;
-    this.port = Number(process.env.PORT);
+    this.port = Number(process.env.PORT) || 3000;
 
     this.connectToTheDatabase();
     this.initializeMiddlewares();
