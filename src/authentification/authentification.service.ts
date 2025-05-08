@@ -3,7 +3,8 @@ import TokenData from "token/interfaceToken";
 import WrongCredentialsException from "../exceptions/WrongCredentialsException";
 import jwt from "jsonwebtoken";
 import UserWithThatEmailAlreadyExistsException from "../exceptions/UserWithThatEmailAlreadyExistsException";
-import bcrypt from "bcrypt";
+// import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import PasswordDontMatch from "../exceptions/PasswordDontMatch";
 import User from "users/user.interface";
 import DataStoredInToken from "token/interface.DataStorageInToken";
@@ -24,14 +25,14 @@ class AuthentificationService {
     if (existingUser) {
       throw new UserWithThatEmailAlreadyExistsException(userData.email);
     }
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = await bcryptjs.hash(userData.password, 10);
     await this.userRepository.createdUser(userData, hashedPassword);
   }
 
   public async loggin(logInData: LoginDto) {
     const user = await this.userRepository.findUserByEmail(logInData.email);
     if (user != undefined) {
-      const isPasswordMatching = await bcrypt.compare(
+      const isPasswordMatching = await bcryptjs.compare(
         logInData.password,
         user.password
       );
