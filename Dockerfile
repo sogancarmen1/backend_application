@@ -8,6 +8,8 @@ RUN npm install -g pnpm
 
 RUN pnpm install
 
+RUN pnpm allow-scripts
+
 RUN pnpm rebuild bcrypt
 
 COPY . ./
