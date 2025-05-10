@@ -7,7 +7,7 @@ const swaggerOptions = {
     info: {
       title: "ProAt API",
       version: "1.0.0",
-      description: "Documentation of ProAt API",
+      description: "Documentation of ProAt API by SOGAN Carmen",
       contact: {
         email: "sogancarmen1@gmail.com",
       },
